@@ -11,7 +11,7 @@ const Checkbox = ({ checked, onPress, customStyle }) => {
       <View style={styles.checkbox}>
         <Icon
           name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'}
-          color={checked ? theme.$primary : theme.$text}
+          color={checked ? "black" : "grey"}
           size={24}
         />
       </View>

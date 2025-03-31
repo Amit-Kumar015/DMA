@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Sound from 'react-native-sound';
+// import Sound from 'react-native-sound';
 import {showMessage} from 'react-native-flash-message';
-import {THEMES} from '../assets/theme';
-import {STATUSES} from '../constants/constants';
+// import {THEMES} from '../assets/theme';
+// import {STATUSES} from '../constants/constants';
 import moment from 'moment';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 import {Alert} from 'react-native';
@@ -124,6 +124,9 @@ export const formattedTime = () => {
   return `${hours.toString().padStart(2, '0')}:${minutes
     .toString()
     .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+export const formatDate = (date) => {
+  return date ? moment(date).format('ddd, DD-MMM-YYYY') : "No Date Selected";
 };
 
 export const calculateTime = clockInDate => {

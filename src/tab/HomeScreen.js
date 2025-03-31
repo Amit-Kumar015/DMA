@@ -17,8 +17,8 @@ import { useSelector } from 'react-redux';
 const HomeScreen = () => {
   const { theme } = useTheme(); // Get theme colors
   const [profilePic, setProfilePic] = useState(null); 
-
-
+  const userData = useSelector(state => state.user.userData);
+console.log("userssss",userData)
   return (
     <SafeAreaView style={style.Container}>
       <Header 

@@ -6,12 +6,12 @@ import {
     widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import { home, homeiconselected, mainlogo, profiles, reels, search, searchiconselected } from "../../constants/imageConstants";
-import HomeScreen from "../../tab/HomeScreen";
 import CreateProfile from "../../screen/createProfile";
 import DmaHome from "../../tab/DmahomeScreen";
 import Search from "../../component/searchInput";
 import searchScreen from "../../tab/searchScreen";
 import EquipmentScreen from "../../tab/EquipmentScreen";
+import HomeScreen from "../../tab/HomeScreen";
 
 const Tab = createBottomTabNavigator();
 

@@ -116,7 +116,7 @@ const SignUp = () => {
       alert('Account created successfully!');
 
       // ✅ Navigate only after successful signup & send all required
-
+       console.log("res",response)
       navigation.navigate('OTPVerificationScreen', {
         user_type: selectedProfile,
         email: email,
@@ -182,10 +182,10 @@ const SignUp = () => {
             <TouchableOpacity
               style={[
                 styles.profileButton,
-                selectedProfile === 'Business' && styles.selectedButton,
+                selectedProfile === 'business' && styles.selectedButton,
               ]}
               onPress={() => {
-                setSelectedProfile('Business');
+                setSelectedProfile('business');
                 setStep(1);
               }}>
               <Text h5 style={styles.profileText}>

@@ -75,14 +75,14 @@ const handleVerify = async () => {
       setBtnLoadingState(false);
 
       // ✅ Navigate only if tokens exist
-      // if (response.data.access && response.data.refresh) {
-      //   if (user_type.toLowerCase() === 'personal') {
-      //     navigation.navigate('createProfile', { userId });
-      //   } else {
-      //     navigation.navigate('BussinessProfile', { userId });
-      //   }
-      if(response){
-        navigation.navigate('createProfile', { userId });
+      if (response.data.access && response.data.refresh) {
+        if (user_type.toLowerCase() === 'personal') {
+          navigation.navigate('createProfile', { userId });
+        } else {
+          navigation.navigate('BussinessProfile', { userId });
+        }
+      // if(response){
+      //   navigation.navigate('createProfile', { userId });
 
 
       } else {

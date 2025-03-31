@@ -4,8 +4,15 @@ import useTheme from '../hooks/useTheme';
 import { inputMinHeight } from '../utils/theme';
 import SelectList from './selectList';
 
-
-const SingleSelect = ({ arrayData, selected, search, selectedCb, uniqueId }) => {
+const SingleSelect = ({
+  arrayData,
+  selected,
+  search,
+  selectedCb,
+  uniqueId,
+  boxStyles = {},  // 🟢 Allowing custom styles from props
+  dropdownStyles = {}, 
+}) => {
   const { theme } = useTheme();
 
   return (
@@ -17,14 +24,16 @@ const SingleSelect = ({ arrayData, selected, search, selectedCb, uniqueId }) => 
       defaultOption={selected}
       search={search}
       boxStyles={{
-        ...styles.multiSelectBox2,
+        ...styles.defaultBox,
         borderColor: theme.$lightText,
         backgroundColor: theme.$surface,
         minHeight: inputMinHeight,
+        ...boxStyles,  // 🟢 Override default styles
       }}
       dropdownStyles={{
         borderColor: theme.$lightText,
         backgroundColor: theme.$surface,
+        ...dropdownStyles,  // 🟢 Override dropdown styles
       }}
     />
   );
@@ -33,14 +42,11 @@ const SingleSelect = ({ arrayData, selected, search, selectedCb, uniqueId }) => 
 export default SingleSelect;
 
 const styles = StyleSheet.create({
-  multiSelectBox2: {
+  defaultBox: {
     borderWidth: 1,
-    paddingHorizontal: 8,
-    borderRadius: 5,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8, // 🟢 More rounded corners for better UI
+    paddingVertical: 10,
     marginVertical: 6,
-  },
-  multiSelectBox3: {
-    borderWidth: 1,
   },
 });

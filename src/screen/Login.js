@@ -23,13 +23,15 @@ import {color} from 'react-native-elements/dist/helpers';
 import ButtonWithPushBack from '../component/Button';
 import PrimaryButton from '../component/prButton';
 import axios from 'axios';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {CommonActions, useNavigation, useRoute} from '@react-navigation/native';
 import {login} from '../network/action';
 import AuthStorage from '../utils/authStorage';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../slices/userSlice';
 import Text from '../component/Text';
 import { showMessage } from '../utils/messages/message';
+import AuthStack from '../navigation/AuthStack/authStack';
+import Appstack from '../navigation/AppStack/appStack';
 
 export default function Login() {
   const {theme} = useTheme();
@@ -147,29 +149,41 @@ export default function Login() {
   //     }
   //   }
   // };
-
   const handleLogin = async () => {
     setError('');
-
+  
     if (!emailOrPhone || !password) {
       setError('Email/Phone and Password are required');
       return;
     }
-
+  
     try {
-      const response = await login({username: emailOrPhone, password});
-
+      const response = await login({ username: emailOrPhone, password });
+  
       if (response?.user && response?.access) {
         await AuthStorage.saveTokens(response?.access, response?.refresh);
-        dispatch(setUserData(response?.user));
-
+  
+        console.log("🔥 Dispatching user data:", response?.user);  // ✅ Debug user data
+        console.log("🔥 Dispatching token:", response?.access);  // ✅ Debug token
+  
+        dispatch(setUserData({
+          user: response?.user,
+          authtoken: response?.access,  // ✅ Token Redux me save karna zaroori hai
+        }));
+  
         showMessage({
           message: 'Login successful!',
           type: 'success',
           theme: theme, 
           duration: 3000
         });
-        navigation.navigate('HomeScreen');
+  
+        // navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: "BottomTab" }],
+        // });
+        // navigation.navigate("HomeScreen")
+  
       } else {
         setError(response?.data?.message || 'Invalid credentials.');
       }
@@ -183,6 +197,8 @@ export default function Login() {
       }
     }
   };
+  
+  
 
   return (
     <SafeAreaView

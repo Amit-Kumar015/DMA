@@ -26,9 +26,14 @@ import Text from '../component/Text';
 import Slide from '../assets/slide';
 import PrimaryButton from '../component/prButton';
 import { openCamera, openPhotos } from '../utils/imagePicker';
-import { useRoute } from '@react-navigation/native';
+import { CommonActions, useRoute } from '@react-navigation/native';
 import AuthStorage from '../utils/authStorage';
 import Header from '../component/header';
+import ImageResizer from 'react-native-image-resizer';
+import AuthStack from '../navigation/AuthStack/authStack';
+import Appstack from '../navigation/AppStack/appStack';
+import { setUserData } from '../slices/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function BussinessProfile({navigation}) {
   const {theme} = useTheme();
@@ -45,6 +50,8 @@ export default function BussinessProfile({navigation}) {
   const [websiteLink, setWebsiteLink] = useState('');
   const [step, setStep] = useState(0);
   const[mobileNumber,setMobileNumber]=useState("")
+  const dispatch = useDispatch();
+  const userData = useSelector(state => state.user.userData);
 
 
   const list = [
@@ -92,20 +99,30 @@ export default function BussinessProfile({navigation}) {
   const handleGalleryOpen = async () => {
     try {
       const image = await openPhotos({cropping: true});
-      setProfilePic(image.uri);
+  
+      if (image) {
+        const resizedImage = await ImageResizer.createResizedImage(
+          image.uri,
+          800, // Width
+          800, // Height
+          'JPEG', // Format
+          80 // Quality (0-100)
+        );
+  
+        setProfilePic(resizedImage.uri);
+      }
+  
       setIsVisible(false);
     } catch (error) {
       console.log('Gallery Error:', error);
     }
   };
-
   const handleCreateProfile = async () => {
     const formData = new FormData();
     formData.append('user', userId);
     formData.append('business_type', businessType);
     formData.append('business_owner', ownerName);
     formData.append('business_name', bussinessName);
-    formData.append('business_about', aboutBusiness);
     formData.append('business_address', businessLocation);
     formData.append('business_phone', mobileNumber);
     formData.append('business_website', websiteLink);
@@ -120,8 +137,7 @@ export default function BussinessProfile({navigation}) {
     }
   
     try {
-       const accessToken = await AuthStorage.getAccessToken();
-      // const accessToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQyNzEzMjg5LCJpYXQiOjE3NDIxMDg0ODksImp0aSI6IjhhNzJmMzIwMmNlMjQxN2M4MTZhMzdmZTQ4M2Q3M2E1IiwidXNlcl9pZCI6IjJjZDJiYjViLTU1NzAtNDk3My04YjMzLWQ4Yzc1YTY2MjEzNSJ9.IsmmJBg4NrBFdmdZ6oehtotLMIIkrcdhe6-chI4wLbo"
+      const accessToken = await AuthStorage.getAccessToken();
       console.log("Access Token:", accessToken);
       console.log("FormData:", formData);
   
@@ -134,23 +150,42 @@ export default function BussinessProfile({navigation}) {
         body: formData,
       });
   
-      console.log("Response Status:", response.status); // ✅ Console the status
+      console.log("Response Status:", response.status);
   
       if (response.status === 201 || response.status === 200) {
         const responseData = await response.json();
+        dispatch(setUserData(responseData?.user)); // Store user data
         console.log('Profile Created:', responseData);
         alert('Business Profile Created Successfully');
-        navigation.goBack();
+  
+        // Navigate in the same way as login
+        // navigation.dispatch(
+        //   CommonActions.reset({
+        //     index: 0,
+        //     routes: [{ name: "BottomTab" }],
+        //   })
+        // );
+      
       } else {
         const errorData = await response.json();
         console.log('Error Response:', errorData);
         alert(`Failed to create business profile: ${errorData.message || 'Please try again.'}`);
       }
+      console.log("Available Routes:", navigation.getState()?.routes);
+
+      // ✅ Navigate after checking available routes
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "BottomTab" }],
+        })
+      );
     } catch (error) {
       console.error('API Error:', error);
       alert('Something went wrong! Please check your connection.');
     }
   };
+  
   
   return (
     <SafeAreaView style={styles.Container}>

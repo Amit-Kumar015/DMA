@@ -10,6 +10,7 @@ import Header from "../component/header";
 
 const data = [
     { text: "Attendance" },
+    { text: "Members" },
     { text: "Batches" },
     { text: "Weekly Plan" },
     { text: "Equipment" }, // Fix extra spaces
@@ -40,6 +41,13 @@ const DmaHome = () => {
                            } else if (item.text === "Batches") {
                                 navigation.navigate("Batches"); // ✅ Navigate to Batches screen
                             }
+                         else if (item.text === "Attendance") {
+                            navigation.navigate("Attendance"); // ✅ Navigate to Batches screen
+                        }
+                        else if (item.text === "Members") {
+                            navigation.navigate("members"); // ✅ Navigate to Batches screen
+                        }
+                       
                             
                         }}
                     >

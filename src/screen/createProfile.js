@@ -376,8 +376,8 @@ const CreateProfile = () => {
       if (response.status === 201 || response.status === 200) {
         const responseData = await response.json();
         console.log('Profile Created:', responseData);
-        Alert.alert('Business Profile Created Successfully');
-        navigation.goBack();
+        Alert.alert(' Profile Created Successfully');
+        navigation.navigate("HomeScreen")
       } else {
         const errorData = await response.json();
         console.log('Error Response:', errorData);
