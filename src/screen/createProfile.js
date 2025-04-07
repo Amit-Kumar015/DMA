@@ -377,7 +377,7 @@ const CreateProfile = () => {
         const responseData = await response.json();
         console.log('Profile Created:', responseData);
         Alert.alert(' Profile Created Successfully');
-        navigation.navigate("HomeScreen")
+        navigation.navigate("Appstack")
       } else {
         const errorData = await response.json();
         console.log('Error Response:', errorData);

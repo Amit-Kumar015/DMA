@@ -32,6 +32,7 @@ import Text from '../component/Text';
 import { showMessage } from '../utils/messages/message';
 import AuthStack from '../navigation/AuthStack/authStack';
 import Appstack from '../navigation/AppStack/appStack';
+import { setData } from '../slices/authSlice';
 
 export default function Login() {
   const {theme} = useTheme();
@@ -170,7 +171,7 @@ export default function Login() {
           user: response?.user,
           authtoken: response?.access,  // ✅ Token Redux me save karna zaroori hai
         }));
-  
+        dispatch(setData(data.user)); 
         showMessage({
           message: 'Login successful!',
           type: 'success',

@@ -26,17 +26,18 @@ import Text from '../component/Text';
 import Slide from '../assets/slide';
 import PrimaryButton from '../component/prButton';
 import { openCamera, openPhotos } from '../utils/imagePicker';
-import { CommonActions, useRoute } from '@react-navigation/native';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import AuthStorage from '../utils/authStorage';
 import Header from '../component/header';
 import ImageResizer from 'react-native-image-resizer';
 import AuthStack from '../navigation/AuthStack/authStack';
 import Appstack from '../navigation/AppStack/appStack';
-import { setUserData } from '../slices/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { setBusinessProfile, setUserData } from '../slices/authSlice';
 
-export default function BussinessProfile({navigation}) {
+export default function BussinessProfile() {
   const {theme} = useTheme();
+  const navigation = useNavigation();
     const route = useRoute();
     const { userId } = route.params || {};
   const [profilePic, setProfilePic] = useState(null);
@@ -117,6 +118,62 @@ export default function BussinessProfile({navigation}) {
       console.log('Gallery Error:', error);
     }
   };
+  // const handleCreateProfile = async () => {
+  //   const formData = new FormData();
+  //   formData.append('user', userId);
+  //   formData.append('business_type', businessType);
+  //   formData.append('business_owner', ownerName);
+  //   formData.append('business_name', bussinessName);
+  //   formData.append('business_address', businessLocation);
+  //   formData.append('business_phone', mobileNumber);
+  //   formData.append('business_website', websiteLink);
+  //   formData.append('business_email', businessEmail);
+  
+  //   if (profilePic) {
+  //     formData.append('business_logo', {
+  //       uri: profilePic,
+  //       type: 'image/jpeg',
+  //       name: 'business_logo.jpg',
+  //     });
+  //   }
+  
+  //   try {
+  //     const accessToken = await AuthStorage.getAccessToken();
+  //     console.log("Access Token:", accessToken);
+  //     console.log("FormData:", formData);
+  
+  //     const response = await fetch('http://52.70.194.52/api/core/business-info/', {
+  //       method: 'POST',
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //       body: formData,
+  //     });
+  
+  //     console.log("Response Status:", response.status);
+  
+  //     if (response.status === 201 || response.status === 200) {
+  //       const responseData = await response.json();
+  //       console.log('🚀 Response Data:', responseData);
+  //       dispatch(setBusinessProfile(responseData));
+  //       console.log('✅ Business profile set in Redux');
+  //       alert('Business Profile Created Successfully');
+  //       navigation.navigate("Appstack");  
+  //     } else {
+  //       const errorData = await response.json();
+  //       console.log('Error Response:', errorData);
+  //       alert(`Failed to create business profile: ${errorData.message || 'profile already exists.'}`);
+  //     }
+  //     // console.log("Available Routes:", navigation.getState()?.routes);
+
+  //     // navigation.navigate("Login");
+  //   } catch (error) {
+  //     console.error('API Error:', error);
+  //     alert('Something went wrong! Please check your connection.');
+  //   }
+  // };
+  
   const handleCreateProfile = async () => {
     const formData = new FormData();
     formData.append('user', userId);
@@ -127,6 +184,9 @@ export default function BussinessProfile({navigation}) {
     formData.append('business_phone', mobileNumber);
     formData.append('business_website', websiteLink);
     formData.append('business_email', businessEmail);
+    
+    // Add the main_category field
+    // formData.append('main_category', mainCategory); // Ensure you have this state variable
   
     if (profilePic) {
       formData.append('business_logo', {
@@ -152,41 +212,33 @@ export default function BussinessProfile({navigation}) {
   
       console.log("Response Status:", response.status);
   
-      if (response.status === 201 || response.status === 200) {
+      if (response.ok) {
         const responseData = await response.json();
-        dispatch(setUserData(responseData?.user)); // Store user data
-        console.log('Profile Created:', responseData);
+        console.log('🚀 Response Data:', responseData);
+        dispatch(setBusinessProfile(responseData));
+        console.log('✅ Business profile set in Redux');
         alert('Business Profile Created Successfully');
-  
-        // Navigate in the same way as login
-        // navigation.dispatch(
-        //   CommonActions.reset({
-        //     index: 0,
-        //     routes: [{ name: "BottomTab" }],
-        //   })
-        // );
-      
+        navigation.navigate("Appstack");  
       } else {
         const errorData = await response.json();
         console.log('Error Response:', errorData);
-        alert(`Failed to create business profile: ${errorData.message || 'Please try again.'}`);
+        
+        // Collect all error messages from the response dynamically
+        const errorMessages = [];
+        for (const [key, value] of Object.entries(errorData)) {
+          if (Array.isArray(value)) {
+            errorMessages.push(...value); // Add all messages for this field
+          }
+        }
+  
+        // Show the error messages from the API
+        alert(`Failed to create business profile: ${errorMessages.join(', ')}`);
       }
-      console.log("Available Routes:", navigation.getState()?.routes);
-
-      // ✅ Navigate after checking available routes
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "BottomTab" }],
-        })
-      );
     } catch (error) {
       console.error('API Error:', error);
       alert('Something went wrong! Please check your connection.');
     }
   };
-  
-  
   return (
     <SafeAreaView style={styles.Container}>
       {/* <GestureHandlerRootView style={{flex: 1}}> */}
@@ -217,8 +269,8 @@ export default function BussinessProfile({navigation}) {
           </View>
 
           <View style={{ marginTop: hp('2%') }}>
-            {/* <Text h4 semiBold>Business Type</Text> */}
-            {/* <SingleSelect
+            <Text h4 semiBold>Business Type</Text>
+            <SingleSelect
               arrayData={[
                 { key: 'S', value: 'Sole Proprietorship' },
                 { key: 'P', value: 'Partnership' },
@@ -227,9 +279,55 @@ export default function BussinessProfile({navigation}) {
               ]}
               uniqueId="businessType"
               selected={businessType}
+              placeholder="Select Bussiness"
+              noDataText="No batch found"
+              // selected={batch.find(item => item.id === selectedBatch)?.name || ''}
+              search={false}
               selectedCb={(key, val) => setBussinessType(val.value)}
-            /> */}
-             <Custominput title="BusinessType" value={businessType} onValueChange={setBussinessType} />
+            />
+             {/* <Custominput title="BusinessType" value={businessType} onValueChange={setBussinessType} /> */}
+             
+          </View>
+
+          <View style={{ marginTop: hp('2%') }}>
+            <Text h4 semiBold>Business Category</Text>
+            <SingleSelect
+              arrayData={[
+                { key: 'S', value: 'Sole Proprietorship' },
+                { key: 'P', value: 'Partnership' },
+                { key: 'C', value: 'Corporation' },
+                { key: 'LLC', value: 'LLC' },
+              ]}
+              uniqueId="businessType"
+              selected={businessType}
+              placeholder="Bussiness Caterory"
+              noDataText="No batch found"
+              // selected={batch.find(item => item.id === selectedBatch)?.name || ''}
+              search={false}
+              selectedCb={(key, val) => setBussinessType(val.value)}
+            />
+             {/* <Custominput title="BusinessType" value={businessType} onValueChange={setBussinessType} /> */}
+             
+          </View>
+          <View style={{ marginTop: hp('2%') }}>
+            <Text h4 semiBold>Business sub Category</Text>
+            <SingleSelect
+              arrayData={[
+                { key: 'S', value: 'Sole Proprietorship' },
+                { key: 'P', value: 'Partnership' },
+                { key: 'C', value: 'Corporation' },
+                { key: 'LLC', value: 'LLC' },
+              ]}
+              uniqueId="businessType"
+              selected={businessType}
+              placeholder="Bussiness sub category"
+              noDataText="No batch found"
+              // selected={batch.find(item => item.id === selectedBatch)?.name || ''}
+              search={false}
+              selectedCb={(key, val) => setBussinessType(val.value)}
+            />
+             {/* <Custominput title="BusinessType" value={businessType} onValueChange={setBussinessType} /> */}
+             
           </View>
 
           <View style={styles.ColRow}>
@@ -327,7 +425,7 @@ const styles = StyleSheet.create({
   avatarWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: hp('2%'),
+    // marginTop: hp('2%'),
     position: 'relative',
   },
   cameraIcon: {

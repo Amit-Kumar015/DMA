@@ -36,7 +36,9 @@ const SelectList = ({
     onSelect = () => {},
     save = 'key',
     dropdownShown = false,
-    fontFamily
+    fontFamily,
+    selectText,
+    noDataText
 }) => {
     const oldOption = useRef(null);
     const [firstRender, setFirstRender] = useState(true);
@@ -142,9 +144,13 @@ const SelectList = ({
                     }}
                 >
                     <Text style={[{ fontFamily, opacity: selectedval === '' || filtereddata.length === 0 ? 0.5 : 1 }, inputStyles, { width: '94%' }]}>
-                        {selectedval === "" ? placeholder || (filtereddata.length >= 1 ? 'Select option' : 'No data found') : selectedval}
-                    </Text>
-                    {!arrowicon ? <Icon name={dropdown ? 'chevron-up' : 'chevron-down'} size={iconSizeSmallSm} style={{ opacity: 0.8 }} /> : arrowicon}
+    {selectedval === "" 
+        ? placeholder || (filtereddata.length >= 1 ? selectText || 'Select option' : noDataText || 'No data found') 
+        : selectedval}
+</Text>
+                    {!arrowicon ? ( <Icon  name={dropdown ? 'chevron-up' : 'chevron-down'}  size={iconSizeSmallSm} color={"black"}  style={{right:5}}/>
+    ) : arrowicon}
+
                 </TouchableOpacity>
             )}
 

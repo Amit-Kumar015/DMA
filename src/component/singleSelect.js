@@ -10,7 +10,9 @@ const SingleSelect = ({
   search,
   selectedCb,
   uniqueId,
-  boxStyles = {},  // 🟢 Allowing custom styles from props
+  placeholder = "Select Option",   // 🟢 Default placeholder
+  noDataText = "No data found",    // 🟢 Default empty state text
+  boxStyles = {},  
   dropdownStyles = {}, 
 }) => {
   const { theme } = useTheme();
@@ -23,17 +25,19 @@ const SingleSelect = ({
       save="value"
       defaultOption={selected}
       search={search}
+      placeholder={placeholder}   // 🟢 Passing placeholder to SelectList
+      noDataText={noDataText}     // 🟢 Passing noDataText to SelectList
       boxStyles={{
         ...styles.defaultBox,
         borderColor: theme.$lightText,
         backgroundColor: theme.$surface,
         minHeight: inputMinHeight,
-        ...boxStyles,  // 🟢 Override default styles
+        ...boxStyles,  
       }}
       dropdownStyles={{
         borderColor: theme.$lightText,
         backgroundColor: theme.$surface,
-        ...dropdownStyles,  // 🟢 Override dropdown styles
+        ...dropdownStyles,  
       }}
     />
   );
@@ -45,7 +49,7 @@ const styles = StyleSheet.create({
   defaultBox: {
     borderWidth: 1,
     paddingHorizontal: 10,
-    borderRadius: 8, // 🟢 More rounded corners for better UI
+    borderRadius: 8,
     paddingVertical: 10,
     marginVertical: 6,
   },

@@ -4,30 +4,37 @@ import { useEffect, useState } from "react";
 import Appstack from "./AppStack/appStack";
 import AuthStack from "./AuthStack/authStack";
 import AuthStorage from "../utils/authStorage";
+import BottomTabNavigator from "./bottomTab/BottomTab";
 
 export const RootNavigator = () => {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.userData);
   const userToken = userData?.authtoken; 
+  const userType = userData?.user?.user_type; // ✅ Extract userType
   const [isLoading, setIsLoading] = useState(true);
-
-  console.log("📌 Redux userData:", userData);  // ✅ Debug Redux state
-  console.log("📌 Extracted Token:", userToken);  // ✅ Debug Token
 
   useEffect(() => {
     const fetchData = async () => {
       const accessToken = await AuthStorage.getAccessToken();
-      console.log("🔍 Retrieved Token from Storage:", accessToken);  // ✅ Debug AsyncStorage
-
       if (accessToken) {
         dispatch(setUserData({ authtoken: accessToken }));
       }
-      setIsLoading(false); 
+      setIsLoading(false);
     };
     fetchData();
   }, [dispatch]);
 
   if (isLoading) return null;
 
-  return userToken ? <Appstack /> : <AuthStack />;
+  // return userToken ? <AuthStack  /> : < />;
+  return (
+    <>
+      {userToken == null || userToken == "" ? (
+        <AuthStack userType={userType} />
+      ) : (
+        <Appstack />
+      )}
+   </>
+  );
+
 };

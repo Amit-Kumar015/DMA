@@ -29,7 +29,7 @@ import Card from '../component/card';
 import CustomDatePicker from '../component/DatePicker';
 import Checkbox from '../component/checkbox';
 import {formatDate} from '../utils/commonAction';
-import { inputMinHeight } from '../utils/theme';
+import {inputMinHeight} from '../utils/theme';
 
 const AttendenceScreen = () => {
   const [step, setStep] = useState(0);
@@ -39,7 +39,9 @@ const AttendenceScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
- 
+  const [batchMembers, setBatchMembers] = useState([]);
+  console.log('res', batch);
+  // console.log(selectedDate,"selectDta")
 
   const showDatePicker = () => {
     setDatePickerVisible(true);
@@ -49,11 +51,11 @@ const AttendenceScreen = () => {
     setDatePickerVisible(false);
   };
 
-  const handleConfirm = (date) => {
+  const handleConfirm = date => {
     setSelectedDate(date);
     hideDatePicker();
   };
-  
+
   const toggleSelection = id => {
     setSelectedItems(
       prevSelected =>
@@ -70,6 +72,7 @@ const AttendenceScreen = () => {
   const fetchBatches = async () => {
     try {
       const accessToken = await AuthStorage.getAccessToken();
+      console.log('access', accessToken);
       const response = await fetch(
         'http://52.70.194.52/api/attendance/batches/',
         {
@@ -84,157 +87,215 @@ const AttendenceScreen = () => {
       console.error('Error fetching batches:', error);
     }
   };
+  // const handleBatchClick = async (batchId) => {
+  //   console.log('🔍 Batch ID passed to handleBatchClick:', batchId);
+  //   try {
+  //     // const batchId="319cd491-f5bf-4130-a6c4-7ff770decdeb"
+  //     // console.log('🔍 Batch ID :', batchId);
+  //     const accessToken = await AuthStorage.getAccessToken();
+  //     const response = await fetch(`http://52.70.194.52/api/attendance/batch-members/319cd491-f5bf-4130-a6c4-7ff770decdeb/`, {
+  //       method: 'GET',
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //       },
+  //     });
+
+  //     if (!response.ok) throw new Error('Something went wrong');
+
+  //     const data = await response.json();
+  //     console.log('✅ Batch Members:', data);
+  //     // You can store to state if needed
+  //   } catch (error) {
+  //     console.error('❌ Error fetching batch members:', error);
+  //     Alert.alert('Error', 'Failed to load batch members');
+  //   }
+  // };
+
+  const handleBatchClick = async batchId => {
+    console.log('🔍 Batch ID passed to handleBatchClick:', batchId);
+    try {
+      const accessToken = await AuthStorage.getAccessToken();
+      const response = await fetch(
+        `http://52.70.194.52/api/attendance/batch-members/${batchId}/`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.warn('⚠️ Non-OK response but got data:', data);
+        Alert.alert('Error', 'No members assign.');
+        return;
+      }
+
+      console.log('✅ Batch Members:', data);
+      setBatchMembers(data || []);
+    } catch (error) {
+      console.error('❌ Error fetching batch members:', error);
+      Alert.alert('Error', 'Failed to load batch members');
+    }
+  };
+
+  const markAttendance = async () => {
+    try {
+      const accessToken = await AuthStorage.getAccessToken();
+      const batchId = selectedBatch;
+      console.log('batch', batchId);
+      const selectedUserIds = batchMembers
+        .filter(member => selectedItems.includes(member.id))
+        .map(member => member.id);
+
+      if (!selectedDate) {
+        Alert.alert('Error', 'Please select a date');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('date', moment(selectedDate).format('YYYY-MM-DD')); // ✅ FIXED
+      formData.append('user_ids', selectedUserIds); // ✅ array of IDs
+
+      console.log('📤 Sending FormData:', formData);
+
+      const response = await fetch(
+        `http://52.70.194.52/api/attendance/batch/${batchId}/attendance/`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to mark attendance');
+      }
+
+      const result = await response.json();
+      console.log('✅ Attendance marked:', result);
+      Alert.alert('Success', 'Attendance marked successfully');
+    } catch (error) {
+      console.error('❌ Error:', error);
+      Alert.alert('Error', 'Could not mark attendance');
+    }
+  };
+
+  const today = new Date();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   return (
     <View style={styles.container}>
       {step === 0 && <Header showBack={true} title="Attendance" />}
       {step === 0 && (
         <>
-          {/* <View style={{paddingHorizontal: 15, marginTop: 10}}>
-            {/* Select Batch */}
-            {/* <Text h4 bold style={{marginBottom: 5}}>
-              Select Batch
-            </Text>
-            <SingleSelect
-              arrayData={
-                batch?.map(item => ({
-                  key: item.id,
-                  value: item.name,
-                })) || []
-              }
-              selected={selectedBatch}
-              search={false}
-              selectedCb={value => {
-                const selectedItem = batch?.find(item => item.name === value);
-                setSelectedBatch(selectedItem ? selectedItem.id : '');
-              }}
-              boxStyles={{
-                ...styles.defaultBox,
-                borderColor: theme.$lightText,
-                backgroundColor: theme.$surface,
-                minHeight: inputMinHeight,
-                width: '50%',  // ✅ Set width to 50%
-                // ...boxStyles,
-              }}
-              dropdownStyles={{
-                borderColor: theme.$lightText,
-                backgroundColor: theme.$surface,
-                width: '50%',  // ✅ Set width to 50%
-                // ...dropdownStyles,
-              }}
-            /> */}
-        <View style={{ paddingHorizontal: 15, marginTop: 5 }}>
-  {/* Row Layout for SingleSelect & Button */}
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-    
-    {/* Select Batch Column */}
-    <View style={{ width: '50%' }}>
-      <Text h4 bold>Select Batch</Text>
-      <SingleSelect
-        arrayData={
-          batch?.map(item => ({
-            key: item.id,
-            value: item.name,
-          })) || []
-        }
-        selected={selectedBatch}
-        search={false}
-        selectedCb={value => {
-          const selectedItem = batch?.find(item => item.name === value);
-          setSelectedBatch(selectedItem ? selectedItem.id : '');
-        }}
-        boxStyles={{
-          borderColor: theme.$lightText,
-          backgroundColor: theme.$surface,
-          minHeight: inputMinHeight,
-          width: '100%', // ✅ Takes full width of its column
-        }}
-        dropdownStyles={{
-          borderColor: theme.$lightText,
-          backgroundColor: theme.$surface,
-          width: '100%', // ✅ Takes full width of its column
-        }}
-      />
-    </View>
+          <View style={{paddingHorizontal: 15, marginTop: 5}}>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <View style={{width: '50%', position: 'relative', zIndex: 10}}>
+                <SingleSelect
+                  arrayData={
+                    batch.map(item => ({
+                      key: item.id,
+                      value: item.name,
+                    })) || []
+                  }
+                  placeholder="Select Batch"
+                  noDataText="No batch found"
+                  // selected={batch.find(item => item.id === selectedBatch)?.name || ''}
+                  search={false}
+                  selected={
+                    batch?.find(item => item.id === selectedBatch)?.name || ''
+                  }
+                  selectedCb={(uniqueId, selectedItem) => {
+                    console.log(
+                      '🔵 Raw selectedItem from dropdown:',
+                      selectedItem,
+                    );
+                    if (selectedItem) {
+                      const selectedName = selectedItem.value;
+                      const item = batch.find(
+                        batchItem => batchItem.name === selectedName,
+                      );
+                      console.log('🟢 Actual Selected Item:', item);
+                      if (item) {
+                        setSelectedBatch(item.id);
+                        handleBatchClick(item.id);
+                      }
+                    } else {
+                      console.warn('Selected item is undefined');
+                    }
+                  }}
+                  boxStyles={{
+                    borderColor: theme.$lightText,
+                    backgroundColor: theme.$surface,
+                    minHeight: inputMinHeight,
+                    width: '100%',
+                    zIndex: 10,
+                  }}
+                  dropdownStyles={{
+                    zIndex: 999,
+                    backgroundColor: theme.$surface,
+                    borderColor: theme.$lightText,
+                    width: '100%',
+                    elevation: 5,
+                    shadowColor: '#000',
+                    shadowOffset: {width: 0, height: 2},
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                  }}
+                />
+              </View>
+              <View style={{width: '50%'}}>
+                <TouchableOpacity
+                  onPress={markAttendance}
+                  style={{
+                    backgroundColor: '#f2f3f4',
+                    borderColor: 'black',
+                    borderWidth: 1,
+                    paddingVertical: 10,
+                    paddingHorizontal: 20,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    top: 6,
+                    minHeight: inputMinHeight,
+                  }}>
+                  <Text h5>Mark Attendance</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
 
-    {/* Mark Attendance Column */}
-    <View style={{ width: '50%' }}>
-      <Text h4 bold style={{ bottom:5 }}>Mark Attendance</Text>
-      <TouchableOpacity
-        onPress={() => console.log('Attendance Marked')}
-        style={{
-          backgroundColor: '#f2f3f4', // ✅ Background color
-          borderColor: 'black',       // ✅ Border color
-          borderWidth: 1,
-          paddingVertical: 10,
-          paddingHorizontal: 20,
-          borderRadius: 8,            // ✅ Rounded corners
-          alignItems: 'center',
-          justifyContent: 'center',   // ✅ Center vertically
-          width: '100%',  
-          minHeight: inputMinHeight,
-        }}
-      >
-        <Text h5>Mark Attendance</Text>
-      </TouchableOpacity>
-    </View>
-
-  </View>
-</View>
-
-
-           <View style={{paddingHorizontal:15}}>
+          <View style={{paddingHorizontal: 15}}>
             {/* Select Date */}
             <Text h4 bold style={[styles.label, {marginTop: 10}]}>
               Select Date
             </Text>
-            {/* <CustomDatePicker
-              value={selectedDate}
-              onChange={date => setSelectedDate(date)}
-              isError={!selectedDate}
-              errorMessage={!selectedDate ? 'Please select a date!' : ''}
-
-            /> */}
-              <TouchableOpacity onPress={showDatePicker} style={styles.datePickerButton}>
-  <Text>{selectedDate ? selectedDate.toDateString() : 'Select Date'}</Text>
-</TouchableOpacity>
+            <TouchableOpacity
+              onPress={showDatePicker}
+              style={styles.datePickerButton}>
+              <Text>
+                {selectedDate ? selectedDate.toDateString() : 'Select Date'}
+              </Text>
+            </TouchableOpacity>
             <DateTimePickerModal
-  isVisible={isDatePickerVisible}  // ✅ Control visibility state
-  mode="date"                      // ✅ Set to 'date' mode
-  onConfirm={handleConfirm}  // ✅ Set selected date
-  onCancel={hideDatePicker}         // ✅ Hide picker on cancel
-/>
-  </View>
-
-            {/* Mark Attendance */}
-            {/* <Text h4 bold style={{}}>
-              Mark Attendance
-            </Text>
-            {/* <ButtonWithPushBack customContainerStyle={{marginTop: 10}}>
-              <PrimaryButton
-                title="Mark Attendance"
-                custmbg="white"
-                onPress={() => console.log('Selected Batch:', selectedBatch)}
-              />
-            </ButtonWithPushBack> */}
-
-        
-          {/* </View> */}
-
-          {/* <FlatList
-    //    data={batches} 
-       keyExtractor={(item) => item.id.toString()}
-       renderItem={({ item }) => (
-        <View style={{paddingHorizontal:10}}>
-         <Card third style={styles.card}>
-           <Text h4 bold>Prince</Text>
-           <Text h5>{item.desc}</Text>
-         </Card>
-         </View>
-       )}
-     /> */}
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={handleConfirm}
+              onCancel={hideDatePicker}
+              minimumDate={sevenDaysAgo}
+              maximumDate={today}
+            />
+          </View>
           <FlatList
-            data={batch} // ✅ Ensure batch contains data
+            data={batchMembers}
             keyExtractor={item => item.id.toString()}
             renderItem={({item}) => (
               <View style={{paddingHorizontal: 16}}>
@@ -244,12 +305,9 @@ const AttendenceScreen = () => {
                     styles.card,
                     {flexDirection: 'row', alignItems: 'center', padding: 10},
                   ]}>
-                  {/* Name on the left */}
                   <Text h4 bold style={{flex: 1}}>
-                    {item.name}
+                    {item.email}
                   </Text>
-
-                  {/* Checkbox on the right */}
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onPress={() => toggleSelection(item.id)}
@@ -275,16 +333,19 @@ const AttendenceScreen = () => {
             title="Attendence Logs"
             customBackEvent={() => setStep(0)}
           />
-          <View style={{   flexDirection: 'row', 
-    alignItems: 'center',paddingHorizontal:16}}>
-          <Text h5 semiBold >
-            {formatDate(selectedDate)}
-          </Text>
-          <View style={{left:5}}>
-          <Icon name="calendar" type="feather" size={15} color="#000" />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+            }}>
+            <Text h5 semiBold>
+              {formatDate(selectedDate)}
+            </Text>
+            <View style={{left: 5}}>
+              <Icon name="calendar" type="feather" size={15} color="#000" />
+            </View>
           </View>
-          
-          </View> 
 
           {/* 🔹 Wrap in KeyboardAvoidingView & ScrollView */}
           <KeyboardAvoidingView
@@ -292,11 +353,6 @@ const AttendenceScreen = () => {
             style={{flex: 1}}>
             <ScrollView
               contentContainerStyle={styles.scrollContainer}></ScrollView>
-
-            {/* 🔹 Button is inside KeyboardAvoidingView */}
-            {/* <ButtonWithPushBack customContainerStyle={styles.buttonContainers}>
-                <PrimaryButton title="Create" onPress={""} />
-              </ButtonWithPushBack> */}
           </KeyboardAvoidingView>
         </Slide>
       )}
@@ -350,12 +406,12 @@ const styles = StyleSheet.create({
   },
   datePickerButton: {
     backgroundColor: '#f2f3f4', // Background color
-    borderColor: 'black',       // Border color
+    borderColor: 'black', // Border color
     borderWidth: 1,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 8,            // Rounded corners
+    borderRadius: 8, // Rounded corners
     alignItems: 'center',
-    width: '100%',               // Set width to 50%
+    width: '100%', // Set width to 50%
   },
 });

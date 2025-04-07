@@ -1,28 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import {
     heightPercentageToDP as hp,
     widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Text from "../component/Text";
 import Header from "../component/header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const data = [
+const businessData = [
     { text: "Attendance" },
     { text: "Members" },
     { text: "Batches" },
     { text: "Weekly Plan" },
-    { text: "Equipment" }, // Fix extra spaces
+    { text: "Equiptment" },
     { text: "Managing Finance" },
     { text: "Performance Update" },
     { text: "Marketing And Promotion" },
-    { text: "Pay To Play/Rent Facility" }, // Fix spelling
-    { text: "Organize Event" }, // Fix spelling
+    { text: "Pay To Play/Rent Facility" },
+    { text: "Organize Event" },
+];
+
+const normalUserData = [
+    { text: "Attendance" },
+    { text: "Batches" },
+    { text: "Equiptment" },
 ];
 
 const DmaHome = () => {
-    const navigation = useNavigation(); // Get navigation object
+    const navigation = useNavigation();
+    // const userType = useSelector(state => state.user.userData?.user?.user_type);
+
+    // Get user type
+    const userData = useSelector(state => state.user.userData);
+    const [userType, setUserType] = useState('');
+    console.log("u5",userType)
+    useEffect(() => {
+      const fetchUserType = async () => {
+        try {
+          if (userData?.user?.user_type) {
+            setUserType(userData.user.user_type);
+            await AsyncStorage.setItem('userType', userData.user.user_type); // Save userType
+          } else {
+            const storedUserType = await AsyncStorage.getItem('userType'); // Fetch userType from AsyncStorage
+            if (storedUserType) {
+              setUserType(storedUserType);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching userType:', error);
+        }
+      };
+    
+      fetchUserType();
+    }, [userData]);
+  
+    console.log('Current userType:', userType);
+    const data = userType === "business" ? businessData : normalUserData; // Select data based on user type
 
     return (
         <View style={styles.Container}>
@@ -34,21 +70,17 @@ const DmaHome = () => {
                     <TouchableOpacity
                         style={styles.ColRow}
                         onPress={() => {
-                            if (item.text === "Equipment") {
-                                navigation.navigate("Equipt");
+                            if (item.text === "Equiptment") {
+                                navigation.navigate("Equiptment");
                             } else if (item.text === "Weekly Plan") {
-                                navigation.navigate("weekly");
-                           } else if (item.text === "Batches") {
-                                navigation.navigate("Batches"); // ✅ Navigate to Batches screen
+                                navigation.navigate("weeklyPlan");
+                            } else if (item.text === "Batches") {
+                                navigation.navigate("Batches");
+                            } else if (item.text === "Attendance") {
+                                navigation.navigate("Attendance");
+                            } else if (item.text === "Members") {
+                                navigation.navigate("members");
                             }
-                         else if (item.text === "Attendance") {
-                            navigation.navigate("Attendance"); // ✅ Navigate to Batches screen
-                        }
-                        else if (item.text === "Members") {
-                            navigation.navigate("members"); // ✅ Navigate to Batches screen
-                        }
-                       
-                            
                         }}
                     >
                         <Text h5 semiBold textAliments="center">{item.text}</Text>

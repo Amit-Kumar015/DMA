@@ -1,10 +1,10 @@
 import {
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -23,6 +23,8 @@ import AuthStorage from '../utils/authStorage';
 import SingleSelect from '../component/singleSelect';
 import useTheme from '../hooks/useTheme';
 import {Avatar} from 'react-native-elements';
+import Text from '../component/Text';
+import ActivityIndicator from '../assets/activityIndicator';
 
 const MemberScreen = () => {
   const [step, setStep] = useState(0);
@@ -31,9 +33,10 @@ const MemberScreen = () => {
   const [selectedBatch, setSelectedBatch] = useState('');
   const [profilePic, setProfilePic] = useState();
   const [members, setMembers] = useState([]);
-  console.log("batch/",batch)
-  console.log("set",selectedBatch)
-  console.log("seta",setSelectedBatch)
+  const [selectedMember, setSelectedMember] = useState(null);
+  console.log('batch/', batch);
+  console.log('set', selectedBatch);
+  console.log('seta', setSelectedBatch);
 
   useEffect(() => {
     fetchBatches();
@@ -45,73 +48,54 @@ const MemberScreen = () => {
 
   const fetchMembers = async () => {
     try {
-      // const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzOTE3NDE3LCJpYXQiOjE3NDMzMTI2MTcsImp0aSI6ImU1MDJlNDU0NmEzZTRmNDBiODEyY2U2NzcwZWNkZTdkIiwidXNlcl9pZCI6ImFjNjY4YWJlLTMxMjgtNGZhOS1hZTJkLWFiOGFjYWRhMGYyNSJ9.8kXp3L8laYpJAQ6qNJ3-rNIVbI7ZOjVCwZwMsE2vf-w';
+      //  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNTg0OTIwLCJpYXQiOjE3NDI5ODAxMjAsImp0aSI6ImQwMjFjZmE0OWNiYzQyOWU4YTczYjNiMGRlNDQxNGQyIiwidXNlcl9pZCI6ImEzMWY3NzZlLWVmYWUtNGIyOS1hZDIzLTZjMDU4MDhiMWIwNCJ9.S0F4ThB3BLl0_4s-kXBdeaOj_FqiTfS6q5PIsmkwnkQ';
       const accessToken = await AuthStorage.getAccessToken();
       // Debugging: Check if token exists
       if (!accessToken) {
         console.error('Error: Access token is missing!');
         return;
       }
-  
+
       console.log('Using Access Token:', accessToken); // Debugging ✅
-  
+
       const response = await fetch(
-        'http://52.70.194.52/api/core/business/members/fd3cb611-6b5c-4f3c-b6a9-fe5135e1fede/',
+        'http://52.70.194.52/api/core/business/members/d9ac13db-747d-4966-bf4b-7929cfa4bdbb/',
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
         return;
       }
-  
+
       const data = await response.json();
       console.log('Fetched Members:', data);
-      setMembers(data || []);
+      setMembers(data.members || []);
     } catch (error) {
       console.error('Error fetching members:', error);
     }
   };
-  
-  // const fetchBatches = async () => {
-  //   try {
-  //     const accessToken = await AuthStorage.getAccessToken();
-  //     const response = await fetch(
-  //       'http://52.70.194.52/api/attendance/batches/',
-  //       {
-  //         method: 'GET',
-  //         headers: {Authorization: `Bearer ${accessToken}`},
-  //       },
-  //     );
-  //     const data = await response.json();
-  //     console.log('Fetched Batches:', data); // ✅ Debugging
-  //     setBatch(data || []); // ✅ Ensure array format
-  //   } catch (error) {
-  //     console.error('Error fetching batches:', error);
-  //   }
-  // };
-
   const fetchBatches = async () => {
     try {
-     const accessToken = await AuthStorage.getAccessToken();
+      const accessToken = await AuthStorage.getAccessToken();
       // const accessToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNTg0OTIwLCJpYXQiOjE3NDI5ODAxMjAsImp0aSI6ImQwMjFjZmE0OWNiYzQyOWU4YTczYjNiMGRlNDQxNGQyIiwidXNlcl9pZCIsggg6ImEzMWY3NzZlLWVmYWUtNGIyOS1hZDIzLTZjMDU4MDhiMWIwNCJ9.S0F4ThB3BLl0_4s-kXBdeaOj_FqiTfS6q5PIsmkwnkQ"
       const response = await fetch(
         'http://52.70.194.52/api/attendance/batches/',
         {
           method: 'GET',
-          headers: { Authorization: `Bearer ${accessToken}` },
+          headers: {Authorization: `Bearer ${accessToken}`},
         },
       );
-      
-      const data = await response.json();  // <--- Ensure data is defined
-      
+
+      const data = await response.json(); // <--- Ensure data is defined
+
       if (response.ok) {
         console.log('✅ Fetched Batches:', data);
         setBatch(data);
@@ -122,60 +106,145 @@ const MemberScreen = () => {
       console.error('🚨 Error fetching batches:', error.message);
     }
   };
-  
+
+  //   const handleAssignBatch = async () => {
+  //     console.log('✅ Selected Batch ID:', selectedBatch);
+  //     console.log('✅ Selected Member ID:', selectedMember); // Debugging
+
+  //     if (!selectedBatch) {
+  //         console.error('Error: No batch selected!');
+  //         return;
+  //     }
+
+  //     if (!selectedMember) {
+  //         console.error('Error: No member selected!');
+  //         return;
+  //     }
+
+  //     try {
+  //         const accessToken = await AuthStorage.getAccessToken();
+  //         console.log('🔹 Access Token:', accessToken);
+
+  //         if (!accessToken) {
+  //             console.error('Error: Missing access token!');
+  //             return;
+  //         }
+
+  //         // ✅ Ensure user ID is encoded correctly
+  //         const memberId = encodeURIComponent(selectedMember.trim().toLowerCase());
+  //         console.log('🔹 Final API URL:', `http://52.70.194.52/api/attendance/assign-batch/${selectedBatch}/${memberId}/`);
+
+  //         const response = await fetch(
+  //             `http://52.70.194.52/api/attendance/assign-batch/${memberId}/${selectedBatch}/`,
+  //             {
+  //                 method: 'POST',
+  //                 headers: {
+  //                     'Authorization': `Bearer ${accessToken}`,
+  //                     'Content-Type': 'application/json',
+  //                 },
+  //             }
+  //         );
+
+  //         const responseText = await response.text(); // Get raw response first
+  //         console.log('🔹 Raw Response:', responseText);
+
+  //         const data = JSON.parse(responseText); // Parse JSON manually
+  //         console.log('✅ Batch Assign Response:', data);
+
+  //         if (!response.ok) {
+  //             console.error(`⚠️ API Error:`, data);
+  //             alert('Failed to assign batch. Please try again.');
+  //             return;
+  //         }
+
+  //         alert(data.message || 'Batch assigned successfully!');
+  //         setStep(0);
+
+  //     } catch (error) {
+  //         console.error('🚨 Error assigning batch:', error.message);
+  //         alert('Failed to assign batch. Please try again.');
+  //     }
+  // };
   const handleAssignBatch = async () => {
-    console.log('Selected Batch:', selectedBatch); // Debugging Log ✅
-  
+    console.log('✅ Selected Batch ID:', selectedBatch);
+    console.log('✅ Selected Member ID:', selectedMember);
+
     if (!selectedBatch) {
       console.error('Error: No batch selected!');
       return;
     }
-  
-    const memberId = 'e6e067e0-1566-45e0-9200-05172239d206';
-    const batchId = selectedBatch;
-  
+
+    if (!selectedMember) {
+      console.error('Error: No member selected!');
+      return;
+    }
+
     try {
       const accessToken = await AuthStorage.getAccessToken();
-  
+      console.log('🔹 Access Token:', accessToken);
+
       if (!accessToken) {
         console.error('Error: Missing access token!');
         return;
       }
-  
-      console.log('Assigning Member:', { batchId, memberId });
-  
+
+      // ✅ Ensure user ID is encoded correctly
+      const memberId = encodeURIComponent(selectedMember.trim().toLowerCase());
+      console.log(
+        '🔹 Final API URL:',
+        `http://52.70.194.52/api/attendance/assign-batch/${memberId}/${selectedBatch}/`,
+      );
+
       const response = await fetch(
-        ` 'http://52.70.194.52/api/attendance/assign-batch/5957921e-0682-45d1-9cdf-0d0c01184787/e6e067e0-1566-45e0-9200-05172239d206/'/`,
+        `http://52.70.194.52/api/attendance/assign-batch/${memberId}/${selectedBatch}/`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
-  
-      const data = await response.json();
-  
+
+      const responseText = await response.text(); // Get raw response first
+      console.log('🔹 Raw Response:', responseText);
+
+      const data = JSON.parse(responseText); // Parse JSON manually
+      console.log('✅ Batch Assign Response:', data);
+
       if (!response.ok) {
-        console.error('API Error:', data);
+        console.error(`⚠️ API Error:`, data);
+        alert('Failed to assign batch. Please try again.');
         return;
       }
-  
-      console.log('Batch Assigned Successfully:', data);
-      
-      // ✅ Show a success message (e.g., Toast)
-      alert('Batch assigned successfully!');
-  
-      // ✅ Optionally navigate back
+
+      alert(data.message || 'Batch assigned successfully!');
+
+      // ✅ Ensure UI Updates Correctly
+      setMembers(prevMembers => {
+        const updatedMembers = prevMembers.map(member =>
+          member.user_id === selectedMember
+            ? {
+                ...member,
+                batch_name:
+                  batch.find(b => b.id === selectedBatch)?.name || 'Unknown',
+              }
+            : member,
+        );
+        return [...updatedMembers]; // Ensure new reference for state update
+      });
+
+      // ✅ Force FlatList Re-render
+      setMembers(prev => [...prev]);
+
+      // ✅ Reset Step After Assignment
       setStep(0);
-  
     } catch (error) {
-      console.error('Error assigning batch:', error.message);
+      console.error('🚨 Error assigning batch:', error.message);
+      alert('Failed to assign batch. Please try again.');
     }
   };
-  
-  
+
   return (
     <View style={styles.container}>
       {step === 0 && <Header showBack={true} title="Members" />}
@@ -193,6 +262,90 @@ const MemberScreen = () => {
        </View>
      )}
    /> */}
+          {members.length > 0 ? (
+            <FlatList
+              data={members}
+              keyExtractor={item => item.user_id}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedMember(item.user_id);
+                    setStep(1);
+                  }}
+                  style={{paddingHorizontal: 10}}>
+                  <Card
+                    third
+                    style={[
+                      styles.card,
+                      selectedMember === item.user_id && {
+                        backgroundColor: '#ddd',
+                      },
+                    ]}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}>
+                      {/* ✅ Profile Image */}
+                      {item.personal_info?.profile_pic ? (
+                        <Avatar
+                          size={wp('10%')}
+                          rounded
+                          activeOpacity={0.7}
+                          overlayContainerStyle={{
+                            backgroundColor: '#D9D9D9',
+                            borderColor: theme.$secondaryText,
+                            borderWidth: 1,
+                          }}
+                          source={{uri: item.personal_info.profile_pic}}
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            styles.profileImage,
+                            styles.placeholderImage,
+                          ]}>
+                          <Text style={{color: '#fff'}}>
+                            {item.user_name.charAt(0)}
+                          </Text>
+                        </View>
+                      )}
+
+                      {/* ✅ Member Name and Batch */}
+                      <View
+                        style={{
+                          flex: 1,
+                          marginLeft: 10,
+                          justifyContent: 'space-between',
+                          flexDirection: 'row',
+                        }}>
+                        <Text h4 bold>
+                          {item.user_name}
+                        </Text>
+                        {item.personal_info?.gender && (
+                          <Text h4 bold>
+                            {item.personal_info.gender.toLowerCase() === 'male'
+                              ? 'M'
+                              : item.personal_info.gender.toLowerCase() ===
+                                'female'
+                              ? 'F'
+                              : ''}
+                          </Text>
+                        )}
+                        {item.batch_name && <Text h5>{item.batch_name}</Text>}
+                      </View>
+                    </View>
+                  </Card>
+                </TouchableOpacity>
+              )}
+            />
+          ) : (
+            // <Text style={{textAlign: 'center', marginTop: 20}}>
+            //   No members found.
+            // </Text>
+            <ActivityIndicator style={top=10} />
+          )}
 
           <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
             <PrimaryButton
@@ -239,22 +392,27 @@ const MemberScreen = () => {
                   Select Batch{' '}
                 </Text>
                 {batch.length > 0 ? (
-          <SingleSelect
-          arrayData={batch.map(item => ({
-            key: String(item.id),  // Ensure ID is a string
-            value: item.name,
-          }))}  
-          selected={selectedBatch || ""}  // Fallback value
-          search={false}
-          selectedCb={(uniqueId, selectedData) => {
-            console.log('🔹 Selected Batch Key:', selectedData.key);
-            if (selectedData.key) {
-              setSelectedBatch(selectedData.key);
-            } else {
-              console.error("🚨 Error: Invalid selection");
-            }
-          }}
-        />
+                  <SingleSelect
+                    arrayData={batch.map(item => ({
+                      key: String(item.id), // Ensure ID is a string
+                      value: item.name,
+                    }))}
+                    selectedCb={(key, selectedData) => {
+                      console.log('🔹 selectedCb triggered');
+                      console.log('🔹 Key:', key);
+                      console.log('🔹 Selected Data:', selectedData);
+
+                      if (selectedData?.key) {
+                        setSelectedBatch(selectedData.key);
+                        // handleBatchClick(selectedData.key); // Fetch batch members
+                      } else {
+                        console.error(
+                          '🚨 Error: Invalid selection',
+                          selectedData,
+                        );
+                      }
+                    }}
+                  />
                 ) : (
                   <Text>Loading batches...</Text>
                 )}
@@ -350,7 +508,7 @@ const styles = StyleSheet.create({
     width: '70%',
     marginLeft: 10,
   },
-    cameraIcon: {
+  cameraIcon: {
     position: 'absolute',
     bottom: 1,
     left: '59%',
@@ -358,5 +516,4 @@ const styles = StyleSheet.create({
     borderRadius: wp('5%'),
     padding: wp('1.5%'),
   },
-
 });

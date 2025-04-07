@@ -31,6 +31,7 @@ import Card from '../component/card';
 import AuthStorage from '../utils/authStorage';
 import ImageResizer from 'react-native-image-resizer';
 import {useFocusEffect} from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 const EquipmentScreen = () => {
   const {theme} = useTheme();
@@ -47,6 +48,8 @@ const EquipmentScreen = () => {
   const [equipmentDetails, setEquipmentDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const userType = useSelector(state => state.user.userData?.user?.user_type);
+  console.log("u22222",userType)
 
   useFocusEffect(
     React.useCallback(() => {
@@ -160,7 +163,8 @@ const EquipmentScreen = () => {
         },
         body: formData,
       });
-
+     console.log("res",response)
+     console.log("formData",formData)
       const responseText = await response.text();
       let data;
       try {
@@ -496,7 +500,7 @@ const EquipmentScreen = () => {
                   ? {uri: equipmentDetails.image}
                   : undefined
               }
-              containerStyle={{flex: 1, alignSelf: 'center'}}
+              containerStyle={{flex: 1, alignSelf: 'center',}}
               resizeMode="contain"
             />
           </View>
@@ -525,7 +529,9 @@ const EquipmentScreen = () => {
               buttonStyle={styles.deleteButton}
               customsBg="grey"
             />
+            
           </View>
+          
         </Slide>
       )}
         {step === 3  && (
@@ -651,6 +657,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: hp('2%'),
     position: 'relative',
+   
   },
   cameraIcon: {
     position: 'absolute',
@@ -677,7 +684,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     borderWidth: 1,
-    borderColor: 'white', // Border color
+    borderColor: 'black', // Border color
   },
 
   cardContent: {
