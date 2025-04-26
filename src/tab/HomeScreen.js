@@ -1,244 +1,246 @@
-import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, SafeAreaView, StyleSheet, BackHandler, PermissionsAndroid } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  View,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  useWindowDimensions,
+  SafeAreaView,
+  Dimensions
+} from 'react-native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import Video from 'react-native-video';
 import useTheme from '../hooks/useTheme';
+import AuthStorage from '../utils/authStorage';
+import Icon from '../component/icon';
 import Header from '../component/header';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Avatar } from 'react-native-elements';
 import Text from '../component/Text';
-import {
-  heightPercentageToDP as hp,
-  widthPercentageToDP as wp,
-} from 'react-native-responsive-screen';
-import Icon from '../component/icon';
-import { useSelector } from 'react-redux';
-import DeviceInfo from 'react-native-device-info';
-import Geolocation from 'react-native-geolocation-service';
-import AuthStorage from '../utils/authStorage';
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+  const [page, setPage] = useState(1);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPlayingId, setCurrentPlayingId] = useState(null);
   const { theme } = useTheme();
-  const userData = useSelector(state => state.user.userData);
-  const [userType, setUserType] = useState('');
-  const businessProfile = useSelector(state => state.auth.businessProfile);
-
-
-  console.log('Business Name:', businessProfile);
-
-const [deviceInfo, setDeviceInfo] = useState({
-  ip_address: 'Fetching...',
-  latitude: 'Fetching...',
-  longitude: 'Fetching...',
-  location: 'Fetching...',
-  device_type: 'Fetching...',
-  os: 'Fetching...',
-  browser: 'Fetching...',
-  user_agent: 'Fetching...',
-  device_name: 'Fetching...',
-});
-
-useEffect(() => {
-  const fetchDeviceDetails = async () => {
-    try {
-      // const deviceName = await DeviceInfo.getDeviceName();
-      const deviceType = DeviceInfo.getDeviceType();
-      const osName = DeviceInfo.getSystemName();
-      const osVersion = DeviceInfo.getSystemVersion();
-      const userAgent = await DeviceInfo.getUserAgent();
-      // const browser = Platform.OS === 'android' ? 'Chrome' : 'Safari';
-
-      let latitude = 'Unavailable';
-      let longitude = 'Unavailable';
-      let address = 'Unknown Location';
-
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.warn('Location permission denied');
-        }
-      }
-
-      await new Promise((resolve) => {
-        Geolocation.getCurrentPosition(
-          async (position) => {
-            latitude = position.coords.latitude.toFixed(6);
-            longitude = position.coords.longitude.toFixed(6);
-
-            const locationResponse = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const locationData = await locationResponse.json();
-            address = locationData?.display_name || 'Unknown Location';
-
-            resolve();
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-            resolve(); // still resolve to proceed
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
-      });
-
-      const response = await fetch('https://api64.ipify.org?format=json');
-      const ipData = await response.json();
-
-      const finalDeviceInfo = {
-        ip_address: ipData.ip,
-        latitude,
-        longitude,
-        location: address,
-        device_type: deviceType,
-        os: `${osName} ${osVersion}`,
-        // browser,
-        user_agent: userAgent,
-      };
-
-      setDeviceInfo((prevState) => ({ ...prevState, ...finalDeviceInfo }));
-      const accessToken = await AuthStorage.getAccessToken();
-      // 🔥 Make the API request using FormData
-      const formData = new FormData();
-      formData.append('ip_address', finalDeviceInfo.ip_address);
-      formData.append('latitude', finalDeviceInfo.latitude);
-      formData.append('longitude', finalDeviceInfo.longitude);
-      formData.append('location', finalDeviceInfo.location);
-      formData.append('device_type', finalDeviceInfo.device_type);
-      formData.append('os', finalDeviceInfo.os);
-      // formData.append('browser', finalDeviceInfo.browser);
-      formData.append('user_agent', finalDeviceInfo.user_agent);
-
-      const apiResponse = await fetch(
-        'http://52.70.194.52/api/core/user-activities/a31f776e-efae-4b29-ad23-6c05808b1b04/',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            // 'Content-Type': 'application/json',
-          },
-          body: formData,
-        }
-      );
-
-      if (apiResponse.ok) {
-        console.log('Device info submitted successfully.');
-      } else {
-        console.error('Failed to submit device info:', await apiResponse.text());
-      }
-    } catch (error) {
-      console.error('Error fetching device details:', error);
-    }
+  // const { width: screenWidth } = useWindowDimensions();
+  console.log("videos",videos)
+  const screenWidth = Dimensions.get('window').width;
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 80,
   };
 
-  fetchDeviceDetails();
-}, []);
-
-
-console.log("deviceinfo",deviceInfo)
-  React.useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      return true;
-    });
-
-    return () => backHandler.remove();
-  }, []);
-
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentPlayingId(viewableItems[0].item.id);
+    }
+  });
 
   useEffect(() => {
-    const fetchUserType = async () => {
-      try {
-        if (userData?.user?.user_type) {
-          setUserType(userData.user.user_type);
-          await AsyncStorage.setItem('userType', userData.user.user_type); // Save userType
-        } else {
-          const storedUserType = await AsyncStorage.getItem('userType'); // Fetch userType from AsyncStorage
-          if (storedUserType) {
-            setUserType(storedUserType);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching userType:', error);
-      }
-    };
-  
-    fetchUserType();
-  }, [userData]);
+    fetchReels(1);
+  }, []);
 
-  console.log('Current userType:', userType);
+  const getTimeAgo = (timestamp) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diff = now - postDate;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (seconds < 60) return 'Just now';
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+    return `${years} year${years > 1 ? 's' : ''} ago`;
+  };
+
+ 
+   const fetchReels = async (pageNumber = 1) => {
+    if (loading || (!hasMore && pageNumber !== 1)) return;
+    setLoading(true);
+    try {
+      const accessToken = await AuthStorage.getAccessToken();
+      const response = await fetch(
+        `http://52.70.194.52/api/feed/posts/list/?page=${pageNumber}&page_size=5`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      const result = await response.json();
+      if (response.ok) {
+        const newVideos = result.results || [];
+        if (newVideos.length === 0) {
+          setHasMore(false);
+        }
+        setVideos(prev => (pageNumber === 1 ? newVideos : [...prev, ...newVideos]));
+        setPage(pageNumber);
+      } else {
+        console.error('❌ Error Fetching Reels:', result);
+      }
+    } catch (error) {
+      console.error('🔥 Network Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const renderItem = ({ item }) => {
+    const isImage = item.media_type === 'image';
+  
+    // Calculate media aspect ratio and height
+    const mediaAspectRatio = item.media_width && item.media_height
+      ? item.media_width / item.media_height
+      : 9 / 16;
+    const mediaHeight = screenWidth / mediaAspectRatio;
+    const maxHeight = 600;
+    const finalMediaHeight = Math.min(mediaHeight, maxHeight);
+  
+    return (
+      <View style={styles.postContainer}>
+        {/* User Info Section */}
+        <View style={styles.userInfo}>
+        <Avatar
+  size={40}
+  rounded
+  overlayContainerStyle={{
+    backgroundColor: theme.$surface,
+    borderColor: theme.$secondaryText,
+    borderWidth: 1,
+  }}
+  source={{ uri: videos[0].user_profile_pic }} // 👈 Accessing the first video's profile pic
+/>
+          <View>
+            <Text h5 bold>{item.user}</Text>
+            <Text h5>{getTimeAgo(item.created_at)}</Text>
+          </View>
+        </View>
+  
+        {/* Media Section: Image or Video */}
+        <View style={{ width: screenWidth, height: finalMediaHeight, backgroundColor: isImage ? '#fff' : '#000' }}>
+          {isImage ? (
+            <Image
+              source={{ uri: item.media_url }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain" // Use contain to show the full image
+            />
+          ) : (
+            <Video
+              source={{ uri: item.media_url }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain" // Use contain for videos as well
+              controls={true}
+              paused={!isFocused || currentPlayingId !== item.id}
+              repeat={true}
+            />
+          )}
+        </View>
+  
+
+        {item.caption ? (
+          <Text h5 style={styles.caption}>
+            {item.caption} {item.hashtags}
+          </Text>
+        ) : null}
+          <View style={styles.actionIconsContainer}>
+        <TouchableOpacity onPress={() => alert('Comment clicked!')}>
+          <Icon name="comment-multiple" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => alert('View clicked!')}>
+          <Icon name="eye" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => alert('Share clicked!')}>
+          <Icon name="share-all" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+      </View>
+    );
+  };
+
+  const renderHeader = () => (
+    <Header
+      showBack={false}
+      title="FAB SPORTS"
+      rightComponent={
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate('uploadreels')}>
+            <AntDesign name="plussquareo" size={26} color={'black'} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => alert('Bell Icon Clicked!')}>
+            <Icon name="bell" size={26} color={'black'} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
+            <Icon name="menu" size={26} color={'black'} />
+          </TouchableOpacity>
+        </View>
+      }
+    />
+  );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      {/* Header */}
-      <Header 
-        showBack={false} 
-        title="Dashboard" 
-        rightComponent={
-          <View style={{ flexDirection: 'row', gap: 15 }}>
-            <TouchableOpacity onPress={() => alert('Bell Icon Clicked!')}>
-              <Icon name="bell" size={23} color={"black"} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert('Settings Icon Clicked!')}>
-              <Icon name="menu" size={23} color={"black"} />
-            </TouchableOpacity>
-          </View>
-        } 
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={videos}
+        keyExtractor={item => item.id.toString()}
+        renderItem={renderItem}
+        onEndReached={() => fetchReels(page + 1)}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={loading ? <ActivityIndicator size="large"  /> : null}
+        showsVerticalScrollIndicator={false}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        ListHeaderComponent={renderHeader}
       />
-
-      {/* Avatar & Name */}
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <Avatar
-          size={80}
-          rounded
-          overlayContainerStyle={{
-            backgroundColor: theme.$surface,
-            borderColor: theme.$secondaryText,
-            borderWidth: 1,
-          }}
-          source={require('../assets/icon/profiles.png')}
-        />
-        <Text h3 semiBold style={{ marginTop: 4 }}>Yuraj Dance Academy</Text>
-      </View>
-
-      {/* Business User Details */}
-      {userType === 'business' ? (
-        <View style={{ alignItems: "center", marginTop: 10 }}>
-          <Text h4 thin style={{ color: theme.$lightText }}>Dance Teacher</Text>
-          <Text h4 thin style={{ color: theme.$lightText }}>10 years of Dance experience</Text>
-          <Text h4 thin style={{ color: theme.$lightText }}>World Class Dancer</Text>
-          <Text h4 thin style={{ color: theme.$lightText }}>Works at the world's best dance academy</Text>
-          <Text h4 thin style={{ marginTop: 8 }}>123 posts</Text>
-        </View>
-      ) : userType === 'personal' ? (
-        /* Personal User Details */
-        <View style={{ alignItems: "center", marginTop: 10 }}>
-          <Text h4 bold style={{ color: 'blue' }}>Welcome, Personal User!</Text>
-          <Text h4 thin style={{ color: theme.$lightText }}>Enjoy Your Personalized Dashboard</Text>
-        </View>
-      ) : null}
     </SafeAreaView>
   );
 };
 
-export default HomeScreen;
-
-const style = StyleSheet.create({
-  Container: {
-    width: wp('100%'),
-    height: hp('100%'),
-    backgroundColor: '#ffffff',
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
   },
-  editProfileButton: {
-    marginTop: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#E847C5",
-    borderRadius: 20,
-  },
-  addImageButton: {
+  headerRight: {
     flexDirection: 'row',
-    alignItems: 'center', 
-    justifyContent: 'center',
-    marginTop: hp('10%'),
+    gap: 20,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  actionIconsContainer: {
+    flexDirection: 'row',
+    // justifyContent: 'space-around',
+    paddingHorizontal: 16,
+    gap:10
+    // borderTopWidth: 1,
+    // borderTopColor: '#ccc',
+  },
+  postContainer: {
+    marginBottom: 20,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    padding: 12,
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  caption: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    fontSize: 14,
+    color: '#333',
   },
 });
+
+export default HomeScreen;

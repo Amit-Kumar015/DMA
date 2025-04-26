@@ -136,9 +136,40 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
 
   const createWeeklyPlan = async () => {
     try {
+      // Validation
+      if (!planName.trim()) {
+        showMessage({
+          message: 'Please enter a plan name.',
+          type: 'danger',
+          theme: theme,
+          duration: 3000,
+        });
+        return;
+      }
+  
+      if (!description.trim()) {
+        showMessage({
+          message: 'Please enter a description.',
+          type: 'danger',
+          theme: theme,
+          duration: 3000,
+        });
+        return;
+      }
+  
+      if (selectedDays.length === 0) {
+        showMessage({
+          message: 'Please select at least one day.',
+          type: 'danger',
+          theme: theme,
+          duration: 3000,
+        });
+        return;
+      }
+  
       const accessToken = await AuthStorage.getAccessToken();
-
-      // Convert selectedDays array into API format (true/false for each day)
+  
+      // Convert selectedDays array into API format
       const daysPayload = {
         sunday: selectedDays.includes('Sunday'),
         monday: selectedDays.includes('Monday'),
@@ -148,22 +179,22 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
         friday: selectedDays.includes('Friday'),
         saturday: selectedDays.includes('Saturday'),
       };
-
+  
       const formData = new FormData();
       formData.append('name', planName);
       formData.append('description', description);
-
+  
       Object.keys(daysPayload).forEach(day => {
-        formData.append(day, daysPayload[day]); // Ensure boolean values are passed
+        formData.append(day, daysPayload[day]);
       });
-
-      // Log the form data before making the request
+  
       console.log('Form Data:', {
         name: planName,
         description: description,
         ...daysPayload,
       });
       console.log(accessToken, 'accessToken');
+  
       const response = await fetch(
         'http://52.70.194.52/api/attendance/weekly-plans/',
         {
@@ -174,26 +205,37 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           body: formData,
         },
       );
-
+  
       const result = await response.json();
       if (response.ok) {
-        // console.log('Weekly Plan Created Successfully:', result);
         showMessage({
-          message: 'weekly plan created successfully!',
+          message: 'Weekly plan created successfully!',
           type: 'success',
           theme: theme,
           duration: 3000,
         });
-        setStep(0); // Navigate back after success
+        setStep(0);
         fetchWeeklyPlans();
       } else {
         console.error('Error Creating Weekly Plan:', result);
+        showMessage({
+          message: result?.message || 'Failed to create weekly plan.',
+          type: 'danger',
+          theme: theme,
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error('Network Error:', error);
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        theme: theme,
+        duration: 3000,
+      });
     }
   };
-
+  
   const fetchSelectedPlanDetails = async planId => {
     try {
       const accessToken = await AuthStorage.getAccessToken();
@@ -273,6 +315,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
   
       if (response.ok) {
         console.log('Sub-task created successfully:', jsonResponse);
+        await fetchSubTasks(); // ✅ Re-fetch updated list
         setStep(2)
       } else {
         console.error('Failed to create sub-task:', jsonResponse);
@@ -482,9 +525,10 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           style={{
             backgroundColor: "black",
             borderRadius: 20,
-            padding: 6,
+            padding: 10,
             alignItems: "center",
             justifyContent: "center",
+            right:5
           }}
         >
           <Icon name="plus" size={20} color="white" />

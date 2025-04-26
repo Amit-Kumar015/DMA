@@ -50,11 +50,14 @@ const EquipmentScreen = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const userType = useSelector(state => state.user.userData?.user?.user_type);
   console.log("u22222",userType)
+  console.log("detaisl",equipmentDetails)
+  console.log('Name:', equipmentName);
+console.log('Description:', equipmentDescription);
+console.log('Count:', equipmentCount);
 
   useFocusEffect(
     React.useCallback(() => {
       fetchEquipmentList();
-      // handleDeleteEquipment()  // API call to reload data
     }, []),
   );
 
@@ -238,63 +241,16 @@ const EquipmentScreen = () => {
       setLoading(false);
     }
   };
-  // const handleDeleteEquipment = async (equipmentId, event) => {
-  //   if (event) event.persist(); // Prevent synthetic event pooling issue
-
-  //   try {
-  //     console.log(`Deleting Equipment ID: ${equipmentId}`);
-
-  //     const token = await AuthStorage.getAccessToken(); // Fetch stored token
-  //     console.log(`Access Token: ${token}`);
-
-  //     const response = await fetch(`https://your-api.com/equipment/${equipmentId}`, {
-  //       method: 'DELETE',
-  //       headers: {
-  //         'Authorization': `Bearer ${token}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       console.error('Delete Error:', errorText);
-  //       Alert.alert('Error', 'Failed to delete equipment.');
-  //       return;
-  //     }
-  //          setStep(0)
-  //     console.log(`Equipment ID ${equipmentId} deleted successfully.`);
-  //     Alert.alert('Success', 'Equipment deleted successfully.');
-
-  //     // Refresh list after deletion
-  //     fetchEquipmentList();
-
-  //   } catch (error) {
-  //     console.error('Delete Request Failed:', error);
-  //     Alert.alert('Error', 'An error occurred while deleting equipment.');
-  //   }
-  // };
-
   const handleDeleteEquipment = async () => {
-    if (isDeleting) return; // Prevent multiple clicks
-    setIsDeleting(true);
-
+    if (isDeleting || !equipmentDetails?.id) return;
+  
     try {
-      if (!equipmentDetails?.id) {
-        ToastAndroid.show('Invalid equipment ID.', ToastAndroid.SHORT);
-        return;
-      }
-
-      console.log('🔄 Deleting Equipment ID:', equipmentDetails.id);
-
+      setIsDeleting(true);
+  
       const accessToken = await AuthStorage.getAccessToken();
-      if (!accessToken) {
-        ToastAndroid.show('Authentication failed.', ToastAndroid.SHORT);
-        return;
-      }
-
+      if (!accessToken) return;
+  
       const apiUrl = `http://52.70.194.52/api/core/equipment/${equipmentDetails.id}/`;
-      console.log('🌍 API URL:', apiUrl);
-
       const deleteResponse = await fetch(apiUrl, {
         method: 'DELETE',
         headers: {
@@ -302,33 +258,115 @@ const EquipmentScreen = () => {
           'Content-Type': 'application/json',
         },
       });
-
-      const responseText = await deleteResponse.text();
-      console.log('📩 API Response:', responseText);
-
-      if (!deleteResponse.ok) {
-        throw new Error(`❌ Failed to delete: ${responseText}`);
+  
+      if (deleteResponse.ok) {
+        // Successful delete
+        setEquipmentList(prevList => 
+          prevList.filter(item => item.id !== equipmentDetails.id) // Remove the deleted item from the list
+        );
+        Alert.alert('Success', 'Equipment deleted successfully.'); // Show success alert
+        setStep(0); // Reset to step 0
+      } else {
+        const errorData = await deleteResponse.json(); // Get error details
+        console.error('❌ Failed to delete equipment. Status:', deleteResponse.status, errorData);
+        Alert.alert('Error', errorData.message || 'Failed to delete equipment. Please try again.'); // Show error alert
       }
-
-      ToastAndroid.show(
-        '✅ Equipment deleted successfully!',
-        ToastAndroid.SHORT,
-      );
-      console.log('✅ Equipment deleted successfully!');
-      setStep(0);
     } catch (error) {
       console.log('❌ Error deleting equipment:', error.message);
-      ToastAndroid.show(`Error: ${error.message}`, ToastAndroid.SHORT);
+      Alert.alert('Error', 'An error occurred while deleting the equipment.'); // Show error alert
     } finally {
-      setIsDeleting(false); // Re-enable button
+      setIsDeleting(false);
     }
   };
-
-  const handleUpdateEquipment = () => {
-
-    setStep(3);
+  
+  const handleEditEquipment = async () => {
+    const formData = new FormData();
+  
+    if (equipmentName) {
+      formData.append('name', equipmentName);
+    }
+    if (equipmentDescription) {
+      formData.append('description', equipmentDescription);
+    }
+    if (equipmentCount) {
+      formData.append('no_of_equipment', equipmentCount.toString());
+    }
+    if (profilePic) {
+      formData.append('image', {
+        uri: profilePic,
+        name: `equipment_image_${Date.now()}.jpg`,
+        type: 'image/jpeg',
+      });
+    }
+  
+    try {
+      const accessToken = await AuthStorage.getAccessToken();
+      const response = await fetch(
+        `http://52.70.194.52/api/core/equipment/${equipmentDetails.id}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // use your token here
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        },
+      );
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Update failed:', errorData);
+        return;
+      }
+  
+      const updatedData = await response.json();
+      console.log('Updated Equipment:', updatedData);
+  
+      setEquipmentList(prevList =>
+        prevList.map(item =>
+          item.id === updatedData.id ? updatedData : item,
+        ),
+      );
+  
+      setEquipmentName(updatedData.name || '');
+      setEquipmentDescription(updatedData.description || '');
+      setEquipmentCount(updatedData.no_of_equipment?.toString() || '');
+      setProfilePic(updatedData.image || '');
+  
+      setStep(0);
+    } catch (err) {
+      console.error('Error while updating equipment:', err);
+    }
   };
-
+  
+  
+  const handleUpdateEquipment = () => {
+    if (equipmentDetails) {
+      // Ensure the details are correctly set before navigating to step 3
+      setProfilePic(equipmentDetails.image || '');
+      setEquipmentName(equipmentDetails.name || '');
+      setEquipmentDescription(equipmentDetails.description || '');
+      setEquipmentCount(String(equipmentDetails.no_of_equipment || ''));
+      setStep(3); // Navigate to step 3 after setting the data
+    } else {
+      console.error("No equipment details available");
+    }
+  };
+  useEffect(() => {
+    if (step === 3 && equipmentDetails) {
+      setProfilePic(equipmentDetails.image || '');
+      setEquipmentName(equipmentDetails.name || '');
+      setEquipmentDescription(equipmentDetails.description || '');
+      setEquipmentCount(String(equipmentDetails.no_of_equipment || ''));
+    }
+  }, [step, equipmentDetails]);
+  const handleAddNewEquipment = () => {
+    setEquipmentName('');
+    setEquipmentDescription('');
+    setEquipmentCount('');
+    setProfilePic(null);
+    setStep(1);
+  };
   return (
     <View style={styles.container}>
       {step === 0 && <Header showBack={true} title="Equipment" />}
@@ -384,7 +422,7 @@ const EquipmentScreen = () => {
           <PrimaryButton
             title="Add"
             icon={<Icon name="plus" type="feather" size={15} color="white" />}
-            onPress={() => setStep(1)}
+            onPress={() => handleAddNewEquipment()}
           />
         </ButtonWithPushBack>
       )}
@@ -516,6 +554,7 @@ const EquipmentScreen = () => {
               {equipmentDetails?.description}
             </Text>
           </View>
+          <ButtonWithPushBack>
           <View style={styles.buttonCont}>
             <PrimaryButton
               title="Edit"
@@ -531,6 +570,7 @@ const EquipmentScreen = () => {
             />
             
           </View>
+          </ButtonWithPushBack>
           
         </Slide>
       )}
@@ -564,7 +604,7 @@ const EquipmentScreen = () => {
                     }}
                     source={profilePic ? {uri: profilePic} : null}
                   />
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={handleImagePicker}
                     style={styles.cameraIcon}>
                     <Icon
@@ -572,7 +612,7 @@ const EquipmentScreen = () => {
                       size={wp('10%')}
                       color={theme.$secondaryText}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -596,10 +636,11 @@ const EquipmentScreen = () => {
                     onValueChange={setEquipmentCount}
                     keyboardType="numeric"
                   />
+                  
                 </View>
               </View>
 
-              <BottomSheet
+              {/* <BottomSheet
                 isVisible={isVisible}
                 containerStyle={{backgroundColor: theme.$surface}}>
                 {list.map(({title, icon, onPress, titleStyle}) => (
@@ -616,12 +657,12 @@ const EquipmentScreen = () => {
                     <ListItem.Chevron />
                   </ListItem>
                 ))}
-              </BottomSheet>
+              </BottomSheet> */}
             </ScrollView>
           </KeyboardAvoidingView>
           <ButtonWithPushBack customContainerStyle={styles.buttonContainers}>
             {/* <PrimaryButton title="Update" onPress={""} /> */}
-            <PrimaryButton title="Edit" onPress={""} />
+            <PrimaryButton title="Edit" onPress={handleEditEquipment} />
           </ButtonWithPushBack>
         </Slide>
       )}

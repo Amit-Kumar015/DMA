@@ -6,7 +6,7 @@ import {
 } from "react-native-responsive-screen";
 import Text from "./Text";
 
-const Custominput = ({ width, height, title, marginTop, onValueChange, multiline }) => {
+const Custominput = ({ width, height, title, marginTop, value, onValueChange, multiline,  placeholder = "", }) => {
     const inputRef = useRef(null);  
 
     return (
@@ -14,6 +14,9 @@ const Custominput = ({ width, height, title, marginTop, onValueChange, multiline
             <Text h4 semiBold style={styles.title}>{title}</Text>
             <TextInput
                 ref={inputRef}  
+                value={value} 
+                placeholder={placeholder} 
+                // ✅ ADD THIS
                 style={[
                     styles.colinput, 
                     { 
@@ -28,11 +31,12 @@ const Custominput = ({ width, height, title, marginTop, onValueChange, multiline
                         onValueChange(text);
                     }
                 }}
-                multiline={multiline} // ✅ Allow multiline input
+                multiline={multiline}
             />
         </View>
     );
 };
+
 
 export default Custominput;
 

@@ -33,21 +33,17 @@ import {
 } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
-// import {useNetInfo} from '@react-native-community/netinfo';
-// import {AuthContext} from './src/utils/contextSlice/context';
-
-// import NetInfo from './src/components/shared/NetInfo';
-
-// import Storage from './src/services/AsyncStorage';
-
 import AuthStorage from './src/utils/authStorage';
-import store from './src/store/store';
+import store, { persistor } from './src/redux/store/store';
 import { RootNavigator } from './src/navigation/rootNavigator';
 import { AuthContext } from './src/utils/contextSlice/Context';
 import FlashMessage from 'react-native-flash-message';
 import SettingsProvider from './src/utils/settingProvider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
- 
+import AuthStack from './src/navigation/AuthStack/authStack';
+import { Appstack } from './src/navigation';
+import { PersistGate } from 'redux-persist/integration/react';
+import NoInternetConnection from './src/component/NoInternet';
 export const navigationRef = React.createRef();
 
  
@@ -190,6 +186,7 @@ const App = () => {
       ) : ( */}
           <GestureHandlerRootView style={{ flex: 1 }}>
           <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
 
           <NavigationContainer>
             {/* <StatusBar
@@ -197,10 +194,15 @@ const App = () => {
               backgroundColor={primaryColor}
             /> */}
                <SettingsProvider>
+               <NoInternetConnection>
             <RootNavigator />
+            </NoInternetConnection>
+
+            {/* <Appstack/> */}
             <FlashMessage position="top" />
             </SettingsProvider>
           </NavigationContainer>
+          </PersistGate>
         </Provider>
         </GestureHandlerRootView>
       {/* )} */}

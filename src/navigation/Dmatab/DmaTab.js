@@ -21,9 +21,6 @@ import MemberScreen from '../../tab/MemberScreen';
 
 const Stack = createStackNavigator();
 function DmaTab() {
-
-  //   console.log(Stack);
-  //   const Clinicparams={isTodaysFlag : false, isbookingAppointment : false}
   return (
     <>
       <StatusBar backgroundColor={'#263d2d'} barStyle="light-content" />

@@ -31,12 +31,14 @@ const MemberScreen = () => {
   const {theme} = useTheme();
   const [batch, setBatch] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState('');
-  const [profilePic, setProfilePic] = useState();
+  // const [profilePic, setProfilePic] = useState();
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   console.log('batch/', batch);
   console.log('set', selectedBatch);
   console.log('seta', setSelectedBatch);
+  const [userName, setUserName] = useState('');
+  const [selectedProfilePic, setSelectedProfilePic] = useState('');
 
   useEffect(() => {
     fetchBatches();
@@ -78,6 +80,7 @@ const MemberScreen = () => {
       const data = await response.json();
       console.log('Fetched Members:', data);
       setMembers(data.members || []);
+      
     } catch (error) {
       console.error('Error fetching members:', error);
     }
@@ -107,64 +110,6 @@ const MemberScreen = () => {
     }
   };
 
-  //   const handleAssignBatch = async () => {
-  //     console.log('✅ Selected Batch ID:', selectedBatch);
-  //     console.log('✅ Selected Member ID:', selectedMember); // Debugging
-
-  //     if (!selectedBatch) {
-  //         console.error('Error: No batch selected!');
-  //         return;
-  //     }
-
-  //     if (!selectedMember) {
-  //         console.error('Error: No member selected!');
-  //         return;
-  //     }
-
-  //     try {
-  //         const accessToken = await AuthStorage.getAccessToken();
-  //         console.log('🔹 Access Token:', accessToken);
-
-  //         if (!accessToken) {
-  //             console.error('Error: Missing access token!');
-  //             return;
-  //         }
-
-  //         // ✅ Ensure user ID is encoded correctly
-  //         const memberId = encodeURIComponent(selectedMember.trim().toLowerCase());
-  //         console.log('🔹 Final API URL:', `http://52.70.194.52/api/attendance/assign-batch/${selectedBatch}/${memberId}/`);
-
-  //         const response = await fetch(
-  //             `http://52.70.194.52/api/attendance/assign-batch/${memberId}/${selectedBatch}/`,
-  //             {
-  //                 method: 'POST',
-  //                 headers: {
-  //                     'Authorization': `Bearer ${accessToken}`,
-  //                     'Content-Type': 'application/json',
-  //                 },
-  //             }
-  //         );
-
-  //         const responseText = await response.text(); // Get raw response first
-  //         console.log('🔹 Raw Response:', responseText);
-
-  //         const data = JSON.parse(responseText); // Parse JSON manually
-  //         console.log('✅ Batch Assign Response:', data);
-
-  //         if (!response.ok) {
-  //             console.error(`⚠️ API Error:`, data);
-  //             alert('Failed to assign batch. Please try again.');
-  //             return;
-  //         }
-
-  //         alert(data.message || 'Batch assigned successfully!');
-  //         setStep(0);
-
-  //     } catch (error) {
-  //         console.error('🚨 Error assigning batch:', error.message);
-  //         alert('Failed to assign batch. Please try again.');
-  //     }
-  // };
   const handleAssignBatch = async () => {
     console.log('✅ Selected Batch ID:', selectedBatch);
     console.log('✅ Selected Member ID:', selectedMember);
@@ -270,6 +215,7 @@ const MemberScreen = () => {
                 <TouchableOpacity
                   onPress={() => {
                     setSelectedMember(item.user_id);
+                    setSelectedProfilePic(item.personal_info?.profile_pic || '');
                     setStep(1);
                   }}
                   style={{paddingHorizontal: 10}}>
@@ -288,7 +234,7 @@ const MemberScreen = () => {
                         justifyContent: 'space-between',
                       }}>
                       {/* ✅ Profile Image */}
-                      {item.personal_info?.profile_pic ? (
+                      {/* {item.personal_info?.profile_pic ? (
                         <Avatar
                           size={wp('10%')}
                           rounded
@@ -306,14 +252,34 @@ const MemberScreen = () => {
                             styles.profileImage,
                             styles.placeholderImage,
                           ]}>
-                          <Text style={{color: '#fff'}}>
+                          <Text style={{color: 'black'}}>
                             {item.user_name.charAt(0)}
                           </Text>
                         </View>
-                      )}
+                      )} */}
+                      <Avatar
+  size={wp('10%')}
+  rounded
+  activeOpacity={0.7}
+  overlayContainerStyle={{
+    backgroundColor: '#D9D9D9',
+    borderColor: theme.$secondaryText,
+    borderWidth: 1,
+  }}
+  source={
+    item.personal_info?.profile_pic
+      ? { uri: item.personal_info.profile_pic }
+      : undefined
+  }
+  title={
+    !item.personal_info?.profile_pic && item.user_name
+      ? item.user_name.charAt(0).toUpperCase()
+      : ''
+  }
+/>
 
                       {/* ✅ Member Name and Batch */}
-                      <View
+                      {/* <View
                         style={{
                           flex: 1,
                           marginLeft: 10,
@@ -322,19 +288,69 @@ const MemberScreen = () => {
                         }}>
                         <Text h4 bold>
                           {item.user_name}
-                        </Text>
-                        {item.personal_info?.gender && (
-                          <Text h4 bold>
-                            {item.personal_info.gender.toLowerCase() === 'male'
-                              ? 'M'
-                              : item.personal_info.gender.toLowerCase() ===
-                                'female'
-                              ? 'F'
-                              : ''}
-                          </Text>
-                        )}
-                        {item.batch_name && <Text h5>{item.batch_name}</Text>}
-                      </View>
+                        </Text> */}
+                        {/* {item.personal_info?.gender && (
+                       <Text h4 bold>
+                       {item.personal_info?.gender?.toLowerCase() === 'male'
+                         ? 'M'
+                         : item.personal_info?.gender?.toLowerCase() === 'female'
+                         ? 'F'
+                         : ""}
+                     </Text>
+                        )} */}
+                        {/* <Text h4 bold>
+  {item.personal_info?.gender?.toLowerCase() === 'male'
+    ? 'M'
+    : item.personal_info?.gender?.toLowerCase() === 'female'
+    ? 'F'
+    : '–'}
+</Text> */}
+                        {/* {item.batch_name && <Text h5>{item.batch_name}</Text>}
+                      </View> */}
+                      <View
+  style={{
+    flex: 1,
+    marginLeft: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  }}>
+  
+  {/* Name */}
+  <Text
+    h4
+    bold
+    style={{
+      flex: 1, // take available space
+      marginRight: 10,
+    }}>
+    {item.user_name}
+  </Text>
+
+  {/* Gender */}
+  <Text
+    h4
+    bold
+    style={{
+      width: 20, // fixed width for alignment
+      // textAlign: 'center',
+      right:20
+    }}>
+    {item.personal_info?.gender?.toLowerCase() === 'male'
+      ? 'M'
+      : item.personal_info?.gender?.toLowerCase() === 'female'
+      ? 'F'
+      : '–'}
+  </Text>
+
+  {/* Batch */}
+  {item.batch_name && (
+    <Text h5 numberOfLines={1} style={{ marginLeft: 10 }}>
+      {item.batch_name}
+    </Text>
+  )}
+</View>
+
                     </View>
                   </Card>
                 </TouchableOpacity>
@@ -344,7 +360,7 @@ const MemberScreen = () => {
             // <Text style={{textAlign: 'center', marginTop: 20}}>
             //   No members found.
             // </Text>
-            <ActivityIndicator style={top=10} />
+            <ActivityIndicator />
           )}
 
           <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
@@ -368,7 +384,7 @@ const MemberScreen = () => {
             style={{flex: 1}}>
             <ScrollView contentContainerStyle={{flexGrow: 1}}>
               <View style={styles.avatarWrapper}>
-                <Avatar
+                {/* <Avatar
                   size={wp('25%')}
                   rounded
                   activeOpacity={0.7}
@@ -377,14 +393,31 @@ const MemberScreen = () => {
                     borderColor: '#000',
                     borderWidth: 1,
                   }}
-                />
-                <TouchableOpacity onPress={''} style={styles.cameraIcon}>
-                  <Icon
-                    name="camera"
-                    size={wp('10%')}
-                    color={theme.$secondaryText}
-                  />
-                </TouchableOpacity>
+                  source={
+                    selectedProfilePic
+                      ? {uri: selectedProfilePic}
+                      : require('../assets/icon/profiles.png') // Optional fallback
+                  }
+                /> */}
+                      
+<Avatar
+  size={wp('25%')}
+  rounded
+  activeOpacity={0.7}
+  overlayContainerStyle={{
+    backgroundColor: '#D9D9D9',
+    borderColor: '#000',
+    borderWidth: 1,
+  }}
+  source={selectedProfilePic ? {uri: selectedProfilePic} : undefined}
+  title={
+    selectedMember && selectedMember.user_name
+      ? selectedMember.user_name.charAt(0).toUpperCase() // Get first letter of selected member's name
+      : ''
+  }
+/>
+
+
               </View>
               <View style={styles.dropdowm}>
                 <Text h4 bold>
@@ -516,4 +549,19 @@ const styles = StyleSheet.create({
     borderRadius: wp('5%'),
     padding: wp('1.5%'),
   },
+  ColRow: {
+    flexDirection: 'row',
+    // alignItems: 'center',
+    justifyContent: 'space-between',
+    // marginTop: hp('3%'),
+    // alignSelf:"center",
+    // gap:20
+  },
+  // avatarWrapper: {
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   marginTop: hp('10%'),
+  //   position: 'relative',
+  // },
+
 });

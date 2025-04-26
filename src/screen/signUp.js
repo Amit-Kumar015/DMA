@@ -38,7 +38,7 @@ const SignUp = () => {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
-  const [selectedProfile, setSelectedProfile] = useState('Personal');
+  const [selectedProfile, setSelectedProfile] = useState('personal');
   const [isChecked, setIsChecked] = useState(true);
   const [errors, setErrors] = useState({});
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
@@ -98,40 +98,42 @@ const SignUp = () => {
 
   const handleSignUp = async () => {
     if (isButtonDisabled) return;
-
+  
     setBtnLoadingState(true); // Show loading indicator
-
+  
+    const formData = {
+      user_type: selectedProfile, // 'personal' or 'business'
+      username: username,
+      email: email,
+      mobile_number: mobile,
+      password: password,
+    };
+  
+    console.log('📤 Form Data:', formData); // 👈 Log form data before request
+  
     try {
       const response = await axios.post(
         'http://52.70.194.52/api/account/register/',
-        {
-          user_type: selectedProfile, // 'personal' or 'business'
-          username: username,
-          email: email,
-          mobile_number: mobile,
-          password: password,
-        },
+        formData
       );
-
-      alert('Account created successfully!');
-
-      // ✅ Navigate only after successful signup & send all required
-       console.log("res",response)
+  
+      console.log('✅ API Response:', response.data); // 👈 Log success response
+  
+      alert('Otp created successfully!');
+  
       navigation.navigate('OTPVerificationScreen', {
-        user_type: selectedProfile,
-        email: email,
-        mobile_number: mobile,
-        username: username,
-        password: password,
+        ...formData, // Spread to reuse all data
       });
     } catch (error) {
+      console.log('❌ Error Response:', error.response?.data); // 👈 Log error response
       alert(
-        error.response?.data?.error || 'Registration failed. Please try again.',
+        error.response?.data?.error || 'Registration failed. Please try again.'
       );
     } finally {
       setBtnLoadingState(false); // Hide loading indicator
     }
   };
+  
 
   return (
     <SafeAreaView
@@ -169,10 +171,10 @@ const SignUp = () => {
             <TouchableOpacity
               style={[
                 styles.profileButton,
-                selectedProfile === 'Personal' && styles.selectedButton,
+                selectedProfile === 'personal' && styles.selectedButton,
               ]}
               onPress={() => {
-                setSelectedProfile('Personal');
+                setSelectedProfile('personal');
                 setStep(1);
               }}>
               <Text h5 style={styles.profileText}>
@@ -223,7 +225,7 @@ const SignUp = () => {
                 marginBottom: 30,
               }}>
               <TextInputEml
-                label="Username"
+                label="Username *"
                 placeholder="Enter your username"
                 value={username}
                 onChangeText={setUsername}
@@ -236,7 +238,7 @@ const SignUp = () => {
               )}
 
               <TextInputEml
-                label="Email"
+                label="Email *"
                 placeholder="Enter your email"
                 value={email}
                 onChangeText={setEmail}
@@ -250,7 +252,7 @@ const SignUp = () => {
               )}
 
               <TextInputEml
-                label="Mobile"
+                label="Mobile *"
                 placeholder="Enter your mobile no"
                 value={mobile}
                 onChangeText={setMobile}
@@ -264,7 +266,7 @@ const SignUp = () => {
               )}
 
               <TextInputEml
-                label="Password"
+                label="Password *"
                 placeholder="********"
                 value={password}
                 onChangeText={setPassword}
@@ -284,8 +286,8 @@ const SignUp = () => {
                   checked={isChecked}
                   onPress={() => setIsChecked(!isChecked)}
                 />
-                <Text style={{color: theme.$surface}}>
-                  Minimum 5 characters required
+                <Text>
+                  Minimum 8 characters required
                 </Text>
               </View>
             </View>
@@ -321,18 +323,7 @@ export default SignUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-  },
-  title: {
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
-    marginVertical: 10,
-    bottom: 50,
   },
   profileSelector: {
     width: '100%',
@@ -343,7 +334,6 @@ const styles = StyleSheet.create({
   profileButton: {
     width: '100%',
     borderWidth: 2,
-    // borderColor: '#E847C5',
     paddingVertical: 10,
     borderRadius: 10,
     marginVertical: 10,

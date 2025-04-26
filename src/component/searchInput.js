@@ -37,11 +37,11 @@ const Search = (props) => {
         style={[
           styles.inputContainer,
           inputContainerStyle,
-          { borderColor: colors.$lightText, backgroundColor: 'grey' },
+          { borderColor: colors.$lightText, backgroundColor: '#F2F3F4' },
         ]}
       >
         {/* Search Icon */}
-        <Icon name="search" type="material" size={22} color="white" style={styles.searchIcon} />
+        <Icon name="search" type="material" size={22} color="grey" style={styles.searchIcon} />
 
         <View style={[styles.inputContent, inputContentStyle]}>
           <TextInput
@@ -52,7 +52,7 @@ const Search = (props) => {
             style={[
               styles.input,
               inputStyle,
-              { color:colors.$lightText }, // Input text color set to white
+              {color:"black"}, // Input text color set to white
             ]}
             onChangeText={onType}
             autoFocus={autoFocus || false}
@@ -66,13 +66,13 @@ const Search = (props) => {
         {/* Clear Text Icon */}
         {value?.length > 0 && (
           <TouchableOpacity onPress={() => onType('')} style={styles.iconButton}>
-            <Icon name="close-circle" type="material-community" size={22} color="white" />
+            <Icon name="close-circle" type="material-community" size={22} color="grey" />
           </TouchableOpacity>
         )}
 
         {/* Mic Icon for Voice Input */}
         <TouchableOpacity onPress={() => console.log('Voice Search Triggered')} style={styles.iconButton}>
-          <Icon name="mic" type="material" size={22} color="white" />
+          <Icon name="mic" type="material" size={22} color="grey" />
         </TouchableOpacity>
       </Card>
     </View>
@@ -88,33 +88,37 @@ Search.defaultProps = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    overflow: 'hidden',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    flex: 1,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    borderWidth: 1,
-  },
-  inputContent: {
-    flex: 1,
-  },
-  input: {
-    height: 46,
-    paddingHorizontal: 10,
-    fontFamily: fonts.regular,
-    fontSize: sizes.h4,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  iconButton: {
-    padding: 5,
-    marginLeft: 5,
-  },
-});
+    container: {
+      flexDirection: 'row',
+      overflow: 'hidden',
+      alignItems: 'center',
+    },
+    inputContainer: {
+      flex: 1,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 2, // reduce vertical padding
+      borderWidth: 1,
+      height: 50, // reduce height
+      // borderRadius:
+      
+    },
+    inputContent: {
+      flex: 1,
+    },
+    input: {
+      paddingHorizontal: 6,
+      fontSize: 13, // smaller font size
+      paddingVertical: 4,
+    },
+    searchIcon: {
+      marginRight: 6,
+    },
+    iconButton: {
+      padding: 4,
+      marginLeft: 4,
+    },
+  });
+  

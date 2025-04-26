@@ -10,6 +10,13 @@ import SearchScreen from "../../tab/searchScreen";
 import DmaHome from "../../tab/DmahomeScreen";
 import EquipmentScreen from "../../tab/EquipmentScreen";
 import BottomTabNavigator from "../bottomTab/BottomTab";
+import uploadReels from "../../tab/uploadReels";
+import UploadReels from "../../tab/uploadReels";
+import NearByScreen from "../../tab/NearByScreen";
+import MenuOptionScreen from "../../tab/MenuScrren";
+import OrganizeEvent from "../../tab/OrganizeEvent";
+import GetSponser from "../../tab/GetSponser";
+import EditProfile from "../../tab/EditScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +66,12 @@ const Appstack = ({ userType }) => {
       <Stack.Screen name="Batches" component={BatchScreen} />
       <Stack.Screen name="Attendance" component={AttendenceScreen} />
       <Stack.Screen name="members" component={MemberScreen} />
+      <Stack.Screen name="uploadreels" component={UploadReels} />
+      <Stack.Screen name="NearBy" component={NearByScreen} />
+      <Stack.Screen name="Menu" component={MenuOptionScreen} />
+      <Stack.Screen name="OrganizeEvent" component={OrganizeEvent} />
+      <Stack.Screen name="GetSponser" component={GetSponser} />
+      <Stack.Screen name="EditScreen" component={EditProfile} />
     </Stack.Navigator>
   );
 };

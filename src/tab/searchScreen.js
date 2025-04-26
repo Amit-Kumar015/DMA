@@ -10,6 +10,7 @@ import Icon from "../component/icon";
 import ActivityIndicator from "../assets/activityIndicator";
 import useTheme from "../hooks/useTheme";
 import Text from "../component/Text";
+import { useNavigation } from "@react-navigation/native";
 
 const delay = 700;
 
@@ -23,6 +24,7 @@ const employeeData = [
 
 const SearchScreen = () => {
     const { theme } = useTheme();
+  const navigation = useNavigation();
     const timeout = useRef(null);
     const [searchText, setSearchText] = useState('');
     const [filteredData, setFilteredData] = useState(employeeData);
@@ -59,8 +61,26 @@ const SearchScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Header showBack={true} />
-            <View style={styles.searchWrapper}>
+       <Header
+  showBack={true}
+  showSearchInput={true}
+  searchProps={{
+    value: searchText,
+    onChangeText: onChangeText,
+    placeholder: "Search Employee",
+    clearIcon: <Icon name="clear" type="material" size={16} />,
+    showLoading: showLoading,
+    loadingProps: <ActivityIndicator style={{ marginRight: 10 }} animating size="small" />,
+    inputContainerStyle: { backgroundColor: "#f2f3f4" },
+    autoFocus: true,
+    cancelComponent: <Icon name="close-circle" color={theme.$lightText} type="material-community" />,
+    cancelButtonProps: <Icon name="close-circle" color={theme.$lightText} type="material-community" />,
+    showCancel: "focus",
+    cancelButtonTitle: "clear",
+  }}
+  paddingHorizontal={5}
+/>
+            {/* <View style={styles.searchWrapper}>
                 <Search
                     containerStyle={styles.searchContainer}
                     placeholder="Search Employee"
@@ -77,7 +97,7 @@ const SearchScreen = () => {
                     showCancel={"focus"}
                     cancelButtonTitle={"clear"}
                 />
-            </View>
+            </View> */}
             <View style={styles.sectionHeader}>
                 <Text h5 semiBold>Recent</Text>
                 <Text h5 semiBold>See all</Text>
@@ -97,15 +117,10 @@ export default SearchScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: wp("100%"),
-        backgroundColor: "black",
+        // width: wp("100%"),
     },
-    searchWrapper: {
-        paddingHorizontal: wp("5%"),
-    },
-    searchContainer: {
-        marginVertical: 5,
-    },
+  
+
     sectionHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -132,6 +147,6 @@ const styles = StyleSheet.create({
     employeeName: {
         flex: 1,
         fontSize: 16,
-        color: "white",
+    
     },
 });

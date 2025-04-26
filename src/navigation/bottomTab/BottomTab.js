@@ -1,69 +1,5 @@
-// import React from "react";
-// import { Image, StyleSheet, View } from "react-native";
-// import {
-//     heightPercentageToDP as hp,
-//     widthPercentageToDP as wp,
-// } from 'react-native-responsive-screen';
-// import { home, homeiconselected, mainlogo, profiles, reels, search, searchiconselected } from "../../constants/imageConstants";
-// import CreateProfile from "../../screen/createProfile";
-// import DmaHome from "../../tab/DmahomeScreen";
-// import Search from "../../component/searchInput";
-// import searchScreen from "../../tab/searchScreen";
-// import EquipmentScreen from "../../tab/EquipmentScreen";
-// import HomeScreen from "../../tab/HomeScreen";
-// import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-// const Tab = createBottomTabNavigator();
-
-// // ✅ Use correct tab names in ICONS object
-// const ICONS = {
-//     HomeScreen: { default: home, selected: homeiconselected },
-//     Search: { default: search, selected: searchiconselected },
-//     Post: { default: mainlogo, selected: mainlogo },
-//     DMA: { default: reels, selected: reels },
-//     Profile: { default: profiles, selected: profiles },
-// };
-
-// const getTabBarIcon = (name, focused) => {
-//     const icon = ICONS[name]?.[focused ? "selected" : "default"];
-
-//     return (
-//         <View>
-//             {icon && <Image source={icon} style={styles.icon} />}
-//         </View>
-//     );
-// };
-
-// const BottomTab = () => {
-//     return (
-//         <Tab.Navigator screenOptions={{
-//             headerShown: false,
-//             tabBarStyle: {
-//                 height: hp("7%"),
-//                 paddingTop: 10,
-//                 backgroundColor: "#000"
-//             }
-//         }}>
-//             <Tab.Screen name="HomeScreen" component={HomeScreen} options={({ route }) => ({ tabBarIcon: ({ focused }) => getTabBarIcon(route.name, focused), tabBarLabel: () => null })} />
-//             <Tab.Screen name="Search" component={searchScreen} options={({ route }) => ({ tabBarIcon: ({ focused }) => getTabBarIcon(route.name, focused), tabBarLabel: () => null })} />
-//             <Tab.Screen name="Post" component={DmaHome} options={({ route }) => ({ tabBarIcon: ({ focused }) => getTabBarIcon(route.name, focused), tabBarLabel: () => null })} />
-//             <Tab.Screen name="DMA" component={DmaHome} options={({ route }) => ({ tabBarIcon: ({ focused }) => getTabBarIcon(route.name, focused), tabBarLabel: () => null })} />
-//             <Tab.Screen name="Profile" component={HomeScreen} options={({ route }) => ({ tabBarIcon: ({ focused }) => getTabBarIcon(route.name, focused), tabBarLabel: () => null })} />
-//         </Tab.Navigator>
-//     );
-// };
-
-// export default BottomTab;
-
-// const styles = StyleSheet.create({
-//     icon: {
-//         width: wp("7%"),
-//         height: wp("7%"),
-//         resizeMode: "contain",
-//     }
-// });
 import React, {useEffect, useState} from 'react';
-// import { NavigationActions } from 'react-navigation';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
   View,
@@ -74,12 +10,9 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
-// import SettingsNavigator from './SettingsNavigator';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
-import {CommonActions} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import HomeScreen from '../../tab/HomeScreen';
@@ -87,6 +20,7 @@ import SearchScreen from '../../tab/searchScreen';
 import DmaHome from '../../tab/DmahomeScreen';
 import { Image } from 'react-native';
 import ReelsScreen from '../../tab/ReelsScreen';
+import ProfileScreen from '../../tab/Profile';
 // const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 function BottomTabNavigator() {
@@ -94,7 +28,6 @@ function BottomTabNavigator() {
   const Appstack = require("../AppStack/appStack").default;
 
   const [showTab, setShowtab] = useState('flex');
-  // const [maintenance, setMaintenance] = useState(true);
   const hideTabbar = (hide = false) => {
     // console.log(hide,'hide======')
     if (hide == false) {
@@ -118,31 +51,10 @@ function BottomTabNavigator() {
   };
 
   // console.log(childInfo, 'childInfo..............');
-
-
-
-  const callBack = () => {
-    // dispatch(getFCMnotificationAPI(undefined, childid));
-  };
   const [count, setCount] = React.useState(1);
-  // console.log(count, 'count.........................');
-  // const {FCMnotification = {}} = useSelector(
-  //   state => state.GetFCMnotificationReducer,
-  // );
-  // console.log(FCMnotification, 'FCMnotification............');
-
   const exitAppFunc = () => {
     BackHandler.exitApp();
   };
-
-  // useEffect(() => {
-    // Update countFalseReadStatus whenever AllQuery changes
-    // setCount(FCMnotification.filter(item => item.readstatus === 'true').length);
-  // }, [FCMnotification]);
-  // let badgeCountdata = FCMnotification.filter(
-  //   item => item.readstatus === 'true',
-  // ).length;
-  // console.log(badgeCountdata, 'badgeCountdata......');
   return (
     <>
       <StatusBar backgroundColor={'#263d2d'} barStyle="light-content" />
@@ -151,6 +63,7 @@ function BottomTabNavigator() {
         screenOptions={({route, navigation}) => ({
           headerShown: false,
           tabBarHideOnKeyboard: true,
+          tabBarShowLabel: false,
           headerStyle: {
             backgroundColor: '#263d2d',
           },
@@ -161,7 +74,7 @@ function BottomTabNavigator() {
             fontFamily: 'Yaldevi-Regular',
           },
           tabBarStyle: {
-            height: 60,
+            height: 65,
             // backgroundColor: '#263d2d',
             display: showTab,
           },
@@ -169,71 +82,71 @@ function BottomTabNavigator() {
           // tabBarInactiveTintColor: '#f1a722',
           tabBarInactiveTintColor: '#000',
           tabBarActiveTintColor: '#f1a722',
-          tabBarLabelStyle: {paddingBottom: 5},
+          tabBarLabelStyle: {paddingBottom:2},
           tabBarIcon: ({color, size, focused}) => {
             let iconName;
-            if (route.name === "HomeTab") {
+            if (route.name === "Home") {
               iconName = focused ? 'home' : 'home-outline';
-              return <Ionicons name={iconName} size={22} color={color} />;
+              return <Ionicons name={iconName} size={25} color={color} />;
             }
 
-            if (route.name === "ReelsTab") {
-              return (
-              <Image 
-              source={require('../../assets/icon/reels.png')} 
-              style={{ width: 29, height: 30, tintColor: 'black' }} 
-            />
-          )}
+          //   if (route.name === "Reels") {
+          //     return (
+          //     <Image 
+          //     source={require('../../assets/icon/reels.png')} 
+          //     style={{ width: 25, height: 25, tintColor: 'black' }} 
+          //   />
+          // )}
           
           
-            if (route.name === "DmaTab") {
+            if (route.name === "Dma") {
               return (
                 <Image 
                   source={require('../../assets/icon/mainlogo.png')} 
-                  style={{ width: 29, height: 30, tintColor: 'black' }} 
+                  style={{ width: 29, height: 40, tintColor: 'black' }} 
                 />
               );
             }
-            if (route.name === "SearchScreen") {
+            if (route.name === "Search") {
               iconName = focused ? 'saved-search' : 'search';
-              return <MaterialIcons name={iconName} size={25} color={color || 'black'} />;
+              return <MaterialIcons name={iconName} size={30} color={color || 'black'} />;
             }
-            // if (route.name === "searchScreen") {
-            //   iconName = focused ? 'search' : 'search';
+            // if (route.name === "ProfileScreen") {
+            //   iconName = focused ? 'profile' : 'Profile';
             //   return <MaterialIcons name={iconName} size={22} color={color || 'black'} />;
             // }
+            if (route.name === "Profile") {
+              // Replace this with user image from Redux or AsyncStorage if needed
+              return (
+                <Image
+                  source={require('../../assets/icon/profiles.png')} // 👈 replace with your profile image
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    borderWidth: focused ? 2 : 0,
+                    borderColor: focused ? '#f1a722' : 'transparent',
+                  }}
+                />
+              );
+            } 
           
           
           },
         })}>
         <Tab.Screen
-          name={"HomeTab"}
+          name={"Home"}
           component={HomeScreen}
-          // children={() => {
-          //   return <Appstack hideTabbar={hideTabbar} />;
-          // }}
-          options={({route, navigation}) =>
-            // console.log(
-            //   navigation.getState().routes[navigation.getState().index].name,
-            // ),
-            ({
-              // title: trans('Home'),
-            })
-          }
-          
-          // options={{
-          //   tabBarButton: props => <CustomTabBarButton route="home" {...props} />,
-          // }}
         />
-          <Tab.Screen
-          name={"ReelsTab"}
+          {/* <Tab.Screen
+          name={"Reels"}
           component={ReelsScreen}
           options={({route, navigation}) => ({
             // title: trans('My Store'),
-          })}/>
+          })}/> */}
       
          <Tab.Screen
-          name={"DmaTab"}
+          name={"Dma"}
           component={DmaHome}
           options={({route, navigation}) => ({
             // title: trans('My Store'),
@@ -244,7 +157,7 @@ function BottomTabNavigator() {
         /> 
         {/* subjectName = '', chapterName = '', examSet = '' */}
         <Tab.Screen
-          name={"SearchScreen"}
+          name={"Search"}
           component={SearchScreen}
           options={({route, navigation}) => ({
             // title: trans('User Profile'),
@@ -253,13 +166,14 @@ function BottomTabNavigator() {
           //   tabBarButton: props => <CustomTabBarButton route="home" {...props} />,
           // }}
         />
-        {/* <Tab.Screen
-          name={ROUTES.NOTIFICATION_TAB}
-          component={NotificationTabNavigator}
-          options={({route, navigation}) => ({
-            title: trans('Notification'),
-          })}
-        /> */}
+        <Tab.Screen
+          name={"Profile"}
+          component={ProfileScreen}
+          // options={({route, navigation}) => ({
+          //   title: trans('Notification'),
+          // })}
+        />
+
       </Tab.Navigator>
     </>
   );

@@ -9,14 +9,14 @@ const hitSlop = { top: 10, left: 10, right: 10, bottom: 10 };
 
 const Button = (props) => {
     const { theme } = useTheme();
-    const { withoutFeedback = false, children, style, withHitSlop = false, ...rest } = props;
+    const { withoutFeedback = false, children, style, withHitSlop = false, customContainerStyle, ...rest } = props;
 
     const touchableWithoutFeedback = () => (
         <TouchableWithoutFeedback
             testID="touchableWithoutFeedback"
             {...(withHitSlop && { hitSlop })}
             {...rest}>
-            <View style={style}>
+            <View style={[style, customContainerStyle]}>
                 {children}
             </View>
         </TouchableWithoutFeedback>
@@ -28,20 +28,20 @@ const Button = (props) => {
             useForeground={true}
             {...(withHitSlop && { hitSlop })}
             background={
-                isAndroidVersion21AndAbove ?
-                    TouchableNativeFeedback.Ripple(theme.$rippleColor, true) :
+                isAndroidVersion21AndAbove ? 
+                    TouchableNativeFeedback.Ripple(theme.$rippleColor, true) : 
                     TouchableNativeFeedback.SelectableBackground()
             }
             {...rest}
         >
-            <View style={[style, { overflow: 'hidden' }]}>
+            <View style={[style, { overflow: 'hidden' }, customContainerStyle]}>
                 {children}
             </View>
         </TouchableNativeFeedback>
     );
 
     const touchableOpacity = () => (
-        <TouchableOpacity testID="touchableOpacity" style={style} {...(withHitSlop && { hitSlop })} {...rest}>
+        <TouchableOpacity testID="touchableOpacity" style={[style, customContainerStyle]} {...(withHitSlop && { hitSlop })} {...rest}>
             {children}
         </TouchableOpacity>
     );

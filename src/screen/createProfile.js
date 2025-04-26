@@ -34,6 +34,8 @@ import Api from '../network/Api';
 import ImageResizer from 'react-native-image-resizer';
 import Header from '../component/header';
 import Slide from '../assets/slide';
+import { setProfile } from '../slices/profileSlice';
+
 
 const CreateProfile = () => {
   const navigation = useNavigation();
@@ -43,7 +45,7 @@ const CreateProfile = () => {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.userData);
   const [step, setStep] = useState(0);
-  console.log("userrr",userData)
+  console.log('userrr', userData);
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
   const [dob, setDob] = useState();
@@ -53,10 +55,8 @@ const CreateProfile = () => {
   const [profilePic, setProfilePic] = useState();
   const [error, setError] = useState();
   const [isVisible, setIsVisible] = useState();
-
-  // Options for the bottom sheet
   const list = [
-    {title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen()},
+    { title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen() },
     {
       title: 'Choose from Gallery',
       icon: 'view-gallery',
@@ -65,11 +65,12 @@ const CreateProfile = () => {
     {
       title: 'Cancel',
       icon: 'close',
-      titleStyle: {color: theme.$danger},
+      titleStyle: { color: theme.$danger },
       onPress: () => setIsVisible(false),
     },
   ];
-
+  
+  
   // Function to handle image picker action
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
@@ -94,25 +95,24 @@ const CreateProfile = () => {
   const handleCameraOpen = async () => {
     try {
       const image = await openCamera({cropping: true});
-  
+
       if (image) {
         const resizedImage = await ImageResizer.createResizedImage(
           image.uri,
           800, // Width
           800, // Height
           'JPEG', // Format
-          80 // Quality (0-100)
+          80, // Quality (0-100)
         );
-  
+
         setProfilePic(resizedImage.uri);
       }
-  
+
       setIsVisible(false);
     } catch (error) {
       console.log('Camera Error:', error);
     }
   };
-  
 
   // Function to open the Gallery
   // const handleGalleryOpen = async () => {
@@ -127,211 +127,24 @@ const CreateProfile = () => {
   const handleGalleryOpen = async () => {
     try {
       const image = await openPhotos({cropping: true});
-  
+
       if (image) {
         const resizedImage = await ImageResizer.createResizedImage(
           image.uri,
           800, // Width
           800, // Height
           'JPEG', // Format
-          80 // Quality (0-100)
+          80, // Quality (0-100)
         );
-  
+
         setProfilePic(resizedImage.uri);
       }
-  
+
       setIsVisible(false);
     } catch (error) {
       console.log('Gallery Error:', error);
     }
   };
-  
-
-  // const handleCreateProfile = async () => {
-  //   setError('');
-
-  //   if (!firstName || !lastName || !gender || !location || !bio || !profilePic) {
-  //     setError('All fields are required');
-  //     return;
-  //   }
-
-  //   try {
-  //     const token = await AuthStorage.getAccessToken(); // Fetch access token
-  //     const userIdFromState = userData?.id; // Get user ID from Redux state
-  //           const formData = new FormData();
-  //           formData.append('user', userId);
-  //           formData.append('first_name', firstName.trim());
-  //           formData.append('last_name', lastName.trim());
-  //           formData.append('gender', gender);
-  //           formData.append('location', location.trim());
-  //           formData.append('bio', bio);
-  //           formData.append('profile_pic', {
-  //             uri: profilePic,
-  //             name: 'profile.jpg',
-  //             type: 'image/jpeg',
-  //           });
-
-  //     console.log('Sending FormData:', formData);
-  //     console.log('User ID:', userId);
-  //     console.log('Access Token:', token);
-
-  //     const response = await personalInfo(formData, token); // Pass token to API
-
-  //     console.log('Profile Response:', response.data);
-
-  //     if (response.status===200) {
-  //       console.log('Profile Created Successfully:', response);
-  //       // dispatch(setUserData(response?.user)); // Save user data in Redux
-  //       navigation.navigate('login');
-  //     } else {
-  //       setError(response?.message || 'Failed to create profile.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Profile Creation Error:', error.response?.data?.error || error.response?.data?.message || error.message);
-
-  //     if (error.response) {
-  //       setError(error.response?.data?.error || error.response?.data?.message || 'Something went wrong.');
-  //     } else {
-  //       setError('Network error. Please check your connection.');
-  //     }
-  //   }
-  // };
-
-  // const handleCreateProfile = async () => {
-  //   setError('');
-  //   // Validate required fields
-  //   if (
-  //     !firstName ||
-  //     !lastName ||
-  //     !gender ||
-  //     !location ||
-  //     !bio ||
-  //     !profilePic
-  //   ) {
-  //     setError('All fields are required');
-  //     return;
-  //   }
-  //   try {
-  //     const formData = {};
-  //     formData.user = userId;
-  //     formData.first_name = firstName.trim();
-  //     formData.last_name = lastName.trim();
-  //     formData.gender = gender;
-  //     formData.location = location.trim();
-  //     formData.bio = bio;
-  //     formData.profile_pic = {
-  //       uri: profilePic,
-  //       name: 'profile.jpg',
-  //       type: 'image/jpeg',
-  //     };
-  //     // Get authentication token
-  //     const accessToken = await AuthStorage.getAccessToken();
-
-  //     const response = await Api.POSTFORM('core/personal-info/', formData, {
-  //       Authorization: `Bearer ${accessToken}`,
-  //     });
-
-  //     // const response = await axios.post(
-  //     //   'http://52.70.194.52/api/core/personal-info/',
-  //     //   formData,
-  //     //   {
-  //     //     headers: {
-  //     //       Authorization: `Bearer ${accessToken}`,
-  //     //       'Content-Type': 'multipart/form-data',
-  //     //     },
-  //     //   }
-  //     // );
-  //   } catch (err) {
-  //     if (err.response) {
-  //       const {status, data} = err.response;
-  //       if (status === 400 && data?.err === 'Personal Info already exists') {
-  //         setError(
-  //           'Profile already exists. Please update your profile instead.',
-  //         );
-  //       } else if (status === 401) {
-  //         setError('Session expired. Please log in again.');
-  //       } else {
-  //         setError('Something went wrong! Please try again.');
-  //       }
-  //     } else {
-  //       setError('Network error. Please check your internet connection.');
-  //     }
-  //   }
-  // };
-
-  // const handleCreateProfile = async () => {
-  //   setError('');
-
-  //   // Validate required fields
-  //   if (!firstName || !lastName || !gender || !location || !bio || !profilePic) {
-  //     setError('All fields are required');
-  //     return;
-  //   }
-
-  //   try {
-  //       const formData = {};
-  //       formData.user = userId;
-  //       formData.first_name = firstName.trim();
-  //       formData.last_name = lastName.trim();
-  //       formData.gender = gender;
-  //       formData.location = location.trim();
-  //       formData.bio = bio;
-  //       formData.profile_pic = {
-  //         uri: profilePic,
-  //         name: 'profile.jpg',
-  //         type: 'image/jpeg',
-  //       };
-
-  //     // Get authentication token
-  //     const accessToken = await AuthStorage.getAccessToken();
-  //     console.log('Token:', accessToken);
-  //     console.log('FormData:', formData);
-
-  //     // Make API request
-  //     const response = await axios.post(
-  //       'http://52.70.194.52/api/core/personal-info/',
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //           'Content-Type': 'multipart/form-data',
-  //         },
-  //       }
-  //     );
-
-  //     console.log('Profile created successfully:', response);
-
-  //     if (response.status === 200 || response.status === 201) {
-  //       Alert.alert('Success', 'Profile created successfully!', [
-  //         { text: 'OK', onPress: () => navigation.navigate('login') },
-  //       ]);
-  //     }
-  //   } catch (error) {
-  //     console.log('Profile Creation Error:', error);
-
-  //     if (error.response) {
-  //       const { status, data } = error.response;
-  //       console.log('Error Response:', data);
-
-  //       switch (status) {
-  //         case 400:
-  //           setError(data?.error || 'Invalid data. Please check your inputs.');
-  //           break;
-  //         case 401:
-  //           setError('Session expired. Please log in again.');
-  //           break;
-  //         case 500:
-  //           setError('Server error. Please try again later.');
-  //           break;
-  //         default:
-  //           setError('Something went wrong! Please try again.');
-  //       }
-  //     } else {
-  //       setError('Network error. Please check your internet connection.');
-  //     }
-  //   }
-  // };
-
   const handleCreateProfile = async () => {
     const formData = new FormData();
 
@@ -373,16 +186,18 @@ const CreateProfile = () => {
 
       console.log('Response Status:', response.status); // ✅ Console the status
 
-      if (response.status === 201 || response.status === 200) {
+      if (response.ok) {
         const responseData = await response.json();
-        console.log('Profile Created:', responseData);
+        console.log('🚀 Response Data:', responseData);
+        dispatch(setProfile(responseData));
         Alert.alert(' Profile Created Successfully');
-        navigation.navigate("Appstack")
+        // setStep(3)
+        navigation.navigate('Appstack');
       } else {
         const errorData = await response.json();
         console.log('Error Response:', errorData);
-        alert(
-          `Failed to create business profile: ${
+        Alert.alert(
+          `Failed to create  profile: ${
             errorData.message || 'Please try again.'
           }`,
         );
@@ -398,7 +213,7 @@ const CreateProfile = () => {
         <>
           <Header showBack={true} />
 
-          <Text h4 bold textAliments="center" style={{color:theme.$lightText}}>
+          <Text h4 bold textAliments="center" style={{color: theme.$lightText}}>
             Add your photo
           </Text>
           {/* <View style={{flex:1,justifyContent:"center"}}> */}
@@ -425,21 +240,25 @@ const CreateProfile = () => {
             </TouchableOpacity>
           </View>
           <ButtonWithPushBack
-              customContainerStyle={{
-                width: '40%',
-                alignSelf: 'center',
-                marginTop: 50,
-              }}>
-          <PrimaryButton 
-  title="Add profile" 
-  onPress={() => {
-    handleImagePicker();
-    setStep(1);
-  }} 
-/>
-</ButtonWithPushBack>
+            customContainerStyle={{
+              width: '40%',
+              alignSelf: 'center',
+              marginTop: 50,
+            }}>
+            <PrimaryButton
+              title="Add profile"
+              onPress={() => {
+                handleImagePicker();
+                setStep(1);
+              }}
+            />
+          </ButtonWithPushBack>
           <TouchableOpacity onPress={() => setStep(1)}>
-            <Text h5 bold textAliments="center" style={{marginTop:20,color:theme.$lightText}}>
+            <Text
+              h5
+              bold
+              textAliments="center"
+              style={{marginTop: 20, color: theme.$lightText}}>
               Skip
             </Text>
           </TouchableOpacity>
@@ -449,9 +268,12 @@ const CreateProfile = () => {
 
       {step === 1 && (
         <Slide index={1}>
-          <Header showBack={true}    customBackEvent={() =>
+          <Header
+            showBack={true}
+            customBackEvent={() =>
               setStep(step > 0 ? step - 1 : navigation.goBack())
-            } />
+            }
+          />
           <View style={{justifyContent: 'center', flexGrow: 1}}>
             <View style={styles.ColRow}>
               <Custominput
@@ -491,10 +313,13 @@ const CreateProfile = () => {
 
       {step === 2 && (
         <Slide index={2}>
-            <Header showBack={true}    customBackEvent={() =>
+          <Header
+            showBack={true}
+            customBackEvent={() =>
               setStep(step > 0 ? step - 1 : navigation.goBack())
-            } />
-          <View style={{justifyContent:"center", flexGrow: 1}}>
+            }
+          />
+          <View style={{justifyContent: 'center', flexGrow: 1}}>
             <Custominput
               width="92%"
               title="Location"
@@ -520,19 +345,20 @@ const CreateProfile = () => {
         </Slide>
       )}
 
-      <BottomSheet
-        isVisible={isVisible}
-        containerStyle={{backgroundColor: theme.$surface}}>
-        {list.map(l => (
-          <ListItem bottomDivider key={l.title} onPress={l.onPress}>
-            <Icon name={l.icon} color={theme.$surface} />
-            <ListItem.Content>
-              <ListItem.Title style={l.titleStyle}>{l.title}</ListItem.Title>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem>
-        ))}
-      </BottomSheet>
+<View style={{ marginTop: 10 }}>
+    <BottomSheet isVisible={isVisible} containerStyle={{ backgroundColor: theme.$surface }}>
+      {list.map(l => (
+        <ListItem key={`${l.title}-${l.icon}`} bottomDivider onPress={l.onPress}>
+          <Icon name={l.icon} color={theme.$surface} />
+          <ListItem.Content>
+            <ListItem.Title style={l.titleStyle}>{l.title}</ListItem.Title>
+          </ListItem.Content>
+          <ListItem.Chevron />
+        </ListItem>
+      ))}
+    </BottomSheet>
+  </View>
+
     </SafeAreaView>
   );
 };

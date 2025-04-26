@@ -26,6 +26,8 @@ import moment from 'moment';
 import SingleSelect from '../component/singleSelect';
 import AuthStorage from '../utils/authStorage';
 import Card from '../component/card';
+import SkeletonCard from '../component/skeleternLoader';
+import { showMessage } from '../utils/messages/message';
 
 const BatchScreen = () => {
   const [step, setStep] = useState(0);
@@ -41,6 +43,7 @@ const BatchScreen = () => {
   const [selectedWeeklyPlan, setSelectedWeeklyPlan] = useState('');
   const [weeklyPlans, setWeeklyPlans] = useState([]);
   const [batches, setBatches] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const showStartTimePicker = () => setStartTimePickerVisibility(true);
   const hideStartTimePicker = () => setStartTimePickerVisibility(false);
@@ -92,6 +95,7 @@ const BatchScreen = () => {
 
   const fetchBatches = async () => {
     try {
+      setIsLoading(true); // Start loading
       const accessToken = await AuthStorage.getAccessToken();
       const response = await fetch('http://52.70.194.52/api/attendance/batches/', {
         method: 'GET',
@@ -100,12 +104,15 @@ const BatchScreen = () => {
         }
       });
       const data = await response.json();
-      console.log("Fetched Batches:", data); // ✅ Debugging
-      setBatches(data); // ✅ Store data in state
+      console.log("Fetched Batches:", data);
+      setBatches(data);
     } catch (error) {
       console.error("Error fetching batches:", error);
+    } finally {
+      setIsLoading(false); // Stop loading after fetch completes or fails
     }
   };
+  
   const fetchWeeklyPlans = async () => {
     try {
       const accessToken = await AuthStorage.getAccessToken();
@@ -129,88 +136,204 @@ const BatchScreen = () => {
       console.error('Network Error:', error);
     }
   };
-  const handleCreateBatch = async () => {
-    if ([name, weeklyPlans, startTime, endTime, description].some(field => !field)) {
-      Alert.alert('Error', 'Please fill all the fields.');
-      return;
-    }
+  // const handleCreateBatch = async () => {
+  //   if ([name, weeklyPlans, startTime, endTime, description].some(field => !field)) {
+  //     Alert.alert('Error', 'Please fill all the fields.');
+  //     return;
+  //   }
   
-    try {
-      const accessToken = await AuthStorage.getAccessToken();
-      console.log('Access Token:', accessToken);
+  //   try {
+  //     const accessToken = await AuthStorage.getAccessToken();
+  //     console.log('Access Token:', accessToken);
   
-      const formattedStartTime = moment(startTime, 'hh:mm A').format('HH:mm:ss');
-      const formattedEndTime = moment(endTime, 'hh:mm A').format('HH:mm:ss');
+  //     const formattedStartTime = moment(startTime, 'hh:mm A').format('HH:mm:ss');
+  //     const formattedEndTime = moment(endTime, 'hh:mm A').format('HH:mm:ss');
   
-      console.log('Formatted Start Time:', formattedStartTime);
-      console.log('Formatted End Time:', formattedEndTime);
+  //     console.log('Formatted Start Time:', formattedStartTime);
+  //     console.log('Formatted End Time:', formattedEndTime);
   
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('weekly_plan', selectedWeeklyPlan); // Send only the ID
-      formData.append('start_time', formattedStartTime);
-      formData.append('end_time', formattedEndTime);
-      formData.append('description', description);
+  //     const formData = new FormData();
+  //     formData.append('name', name);
+  //     formData.append('weekly_plan', selectedWeeklyPlan); // Send only the ID
+  //     formData.append('start_time', formattedStartTime);
+  //     formData.append('end_time', formattedEndTime);
+  //     formData.append('description', description);
   
-      // console.log('FormData Entries:');
-      // for (let [key, value] of formData.entries()) {
-      //   console.log(${key}: ${value});
-      // }
-     console.log("for",formData)
-     const response = await fetch('http://52.70.194.52/api/attendance/batches/', {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${accessToken}`,
+  //     // console.log('FormData Entries:');
+  //     // for (let [key, value] of formData.entries()) {
+  //     //   console.log(${key}: ${value});
+  //     // }
+  //    console.log("for",formData)
+  //    const response = await fetch('http://52.70.194.52/api/attendance/batches/', {
+  //     method: 'POST',
+  //     headers: { 
+  //       'Authorization': `Bearer ${accessToken}`,
     
-      },
-      body:formData, 
+  //     },
+  //     body:formData, 
+  //   });
+  
+  //     const result = await response.json();
+  //     console.log('API Response:', result);
+  
+  //     if (response.ok) {
+  //       Alert.alert('Success', 'Batch created successfully!');
+  //       setStep(0);
+  //       fetchBatches()
+  //     } else {
+  //       Alert.alert('Error', result.message || 'Failed to create batch. Please try again.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Network Error:', error);
+  //     Alert.alert('Error', 'Something went wrong. Please try again later.');
+  //   }
+  // };
+  // Make sure it's imported
+
+const handleCreateBatch = async () => {
+  if (!name) {
+    showMessage({
+      message: 'Please enter the batch name.',
+      type: 'danger',
+      theme: theme,
+      duration: 3000,
     });
-  
-      const result = await response.json();
-      console.log('API Response:', result);
-  
-      if (response.ok) {
-        Alert.alert('Success', 'Batch created successfully!');
-        setStep(0);
-      } else {
-        Alert.alert('Error', result.message || 'Failed to create batch. Please try again.');
-      }
-    } catch (error) {
-      console.error('Network Error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+    return;
+  }
+
+  // if (!selectedWeeklyPlan) {
+  //   showMessage({
+  //     message: 'Please select a weekly plan.',
+  //     type: 'danger',
+  //     theme: theme,
+  //     duration: 3000,  
+  //   });
+  //   return;
+  // }
+
+  if (!startTime) {
+    showMessage({
+      message: 'Please select a start time.',
+      type: 'danger',
+      theme: theme,
+      duration: 3000,
+    });
+    return;
+  }
+
+  if (!endTime) {
+    showMessage({
+      message: 'Please select an end time.',
+      type: 'danger',
+      theme: theme,
+      duration: 3000,
+    });
+    return;
+  }
+
+  if (!description) {
+    showMessage({
+      message: 'Please enter a description.',
+      type: 'danger',
+      theme: theme,
+      duration: 3000,
+    });
+    return;
+  }
+
+  try {
+    const accessToken = await AuthStorage.getAccessToken();
+
+    const formattedStartTime = moment(startTime, 'hh:mm A').format('HH:mm:ss');
+    const formattedEndTime = moment(endTime, 'hh:mm A').format('HH:mm:ss');
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('weekly_plan', selectedWeeklyPlan); // Assuming ID
+    formData.append('start_time', formattedStartTime);
+    formData.append('end_time', formattedEndTime);
+    formData.append('description', description);
+
+    const response = await fetch('http://52.70.194.52/api/attendance/batches/', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+    console.log('API Response:', result);
+
+    if (response.ok) {
+      showMessage({
+        message: 'Batch created successfully!',
+        type: 'success',
+        theme: theme,
+        duration: 3000,
+      });
+      setStep(0);
+      fetchBatches();
+    } else {
+      showMessage({
+        message: result.message || 'Failed to create batch. Please try again.',
+        type: 'danger',
+        theme: theme,
+        duration: 3000,
+      });
     }
-  };
-  
+  } catch (error) {
+    console.error('Network Error:', error);
+    showMessage({
+      message: 'Something went wrong. Please try again later.',
+      type: 'danger',
+      theme: theme,
+      duration: 3000,
+    });
+  }
+};
+
   return (
     <View style={styles.container}>
-      {step === 0 && <Header showBack={true} title="Batch" />}
-      {step === 0 && (
-        <>
-      
-     <FlatList
-     data={batches} 
-     keyExtractor={(item) => item.id.toString()}
-     renderItem={({ item }) => (
-      <View style={{paddingHorizontal:10}}>
-       <Card third style={styles.card}>
-         <Text h4 bold>{item.name}</Text>
-         <Text h5>{item.description}</Text>
-       </Card>
-       </View>
-     )}
-   />
+{step === 0 && <Header showBack={true} title="Batch" />}
 
-   
-        <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
-          <PrimaryButton
-            title="Add"
-            icon={<Icon name="plus" type="feather" size={15} color="white" />}
-            onPress={() => setStep(1)}
+{step === 0 && (
+  <>
+
+      <FlatList
+  data={isLoading ? [...Array(7)] : batches} // If loading, render 5 placeholder items
+  keyExtractor={(item, index) => (item?.id?.toString() || index.toString())}
+  renderItem={({ item, index }) => (
+    <View style={{ paddingHorizontal: 10 }}>
+      <Card third style={styles.card}>
+        {isLoading ? (
+          <SkeletonCard
+            height={69}
+            borderRadius={8}
+            // shimmerColor="#eee"
+            // backgroundColor="#f5f5f5"
+            isLoading={true}
           />
-      
-        </ButtonWithPushBack>
-        </>
-      )}
+        ) : (
+          <>
+            <Text h4 bold>{item.name}</Text>
+            <Text h5>{item.description}</Text>
+          </>
+        )}
+      </Card>
+    </View>
+  )}
+/>
+    <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
+      <PrimaryButton
+        title="Add"
+        icon={<Icon name="plus" type="feather" size={15} color="white" />}
+        onPress={() => setStep(1)}
+      />
+    </ButtonWithPushBack>
+  </>
+)}
+
       {step === 1 && (
         <Slide index={1}>
           <Header
@@ -322,10 +445,11 @@ export default BatchScreen;
 
 const styles = StyleSheet.create({
   container: {
-    width: wp('100%'),
-    height: hp('100%'),
+    // width: wp('100%'),
+    // height: hp('100%'),
     backgroundColor: '#ffffff',
     padding: hp('2%'),
+    flex:1
     
   },
   buttonContainer: {

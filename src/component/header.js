@@ -1,14 +1,28 @@
 import React, { useEffect } from 'react';
-import { StatusBar, Platform, StyleSheet, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  StatusBar,
+  Platform,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import useTheme from '../hooks/useTheme';
 import Text from './Text';
-import {
-    widthPercentageToDP as wp,
-} from 'react-native-responsive-screen';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import Search from './searchInput';
 
-const Header = ({ title, rightComponent, showBack = false, customBackEvent }) => {
+const Header = ({
+  title,
+  rightComponent,
+  showBack = false,
+  customBackEvent,
+  showSearchInput = false,
+  searchProps = {},
+
+}) => {
   const navigation = useNavigation();
   const { theme } = useTheme();
 
@@ -21,23 +35,40 @@ const Header = ({ title, rightComponent, showBack = false, customBackEvent }) =>
   }, []);
 
   return (
-    <SafeAreaView style={{ backgroundColor: '' }}>
-      <StatusBar backgroundColor="#ffffff" barStyle="light-content" hidden={false} />
-      <View style={[styles.headerContainer, {  }]}>
-        {/* Back or Menu Button */}
-        <TouchableOpacity
-          style={styles.touchableContainer}
-          onPress={customBackEvent ? customBackEvent : showBack ? navigation.goBack : navigation.toggleDrawer}
-        >
-          <Icon name={showBack ? 'keyboard-backspace' : 'sort'} size={28} color="black" />
-        </TouchableOpacity>
+    <SafeAreaView style={{ backgroundColor: 'white' }}>
+      <StatusBar barStyle="light-content" hidden={false} />
+      <View style={[styles.headerContainer,]}>
+        {showBack && (
+          <TouchableOpacity
+            style={styles.touchableContainer}
+            onPress={customBackEvent ? customBackEvent : navigation.goBack}
+          >
+            <Icon name="keyboard-backspace" size={28} color="black" />
+          </TouchableOpacity>
+        )}
 
-        {/* Title */}
-        <View style={styles.titleContainer}>
-          <Text h4 bold style={{}}>{title}</Text>
+        {/* Title or Search */}
+        <View style={[styles.centerContainer, { marginLeft: showBack ? 16 : 0, alignItems: showBack ? 'center' : 'flex-start' }]}>
+          {showSearchInput ? (
+            <Search
+              containerStyle={{ marginVertical: 0 }}
+              placeholder="Search..."
+              inputContainerStyle={{
+                backgroundColor: '#f0f0f0',
+                height: 35,
+                borderRadius: 10,
+                paddingHorizontal: 10,
+              }}
+              searchIcon={{}}
+              {...searchProps}
+            />
+          ) : (
+            <Text h4 bold numberOfLines={1}>
+              {title}
+            </Text>
+          )}
         </View>
 
-        {/* Right Custom Component (Optional) */}
         {rightComponent || <View style={styles.touchableContainer} />}
       </View>
     </SafeAreaView>
@@ -51,19 +82,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    marginTop:30
-   
+    marginTop: Platform.OS === 'android' ? 15 : 0,
+    paddingHorizontal :16
   },
   touchableContainer: {
-    width: wp("9%"),
-    height: wp("9%"),
+    width: wp('5%'),
+    height: wp('9%'),
     borderRadius: 50,
- 
-  },
-  titleContainer: {
-    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  sideContainer: {
+    width: wp('10%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    // You can also adjust padding here if necessary
   },
 });

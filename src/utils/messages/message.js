@@ -17,7 +17,7 @@ export const showMessage = (props) => {
     color: theme.$background,
     ...rest,
     type: type || 'default',
-    titleStyle: { fontSize: 18, fontWeight: 'bold',top:10 }, // Bigger text
+    titleStyle: { fontSize: 18, fontWeight: 'bold',top:10 }, 
     duration: duration || 6000,
     // position: { top:5, left: 0, right: 0 },
   });

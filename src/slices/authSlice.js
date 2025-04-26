@@ -27,6 +27,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   user: null,
   businessProfile: null,
+  personalProfile: null, // ✅ Add this
 };
 
 const authSlice = createSlice({
@@ -39,10 +40,11 @@ const authSlice = createSlice({
     setBusinessProfile: (state, action) => {
       state.businessProfile = action.payload;
     },
+    setPersonalProfile: (state, action) => {
+      state.personalProfile = action.payload; 
+    },
   },
 });
 
-export const { setData, setBusinessProfile } = authSlice.actions;
+export const { setData, setBusinessProfile, setPersonalProfile } = authSlice.actions;
 export default authSlice.reducer;
-
-

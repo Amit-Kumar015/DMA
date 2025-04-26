@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../slices/userSlice";
 import { useEffect, useState } from "react";
-import Appstack from "./AppStack/appStack";
-import AuthStack from "./AuthStack/authStack";
+
 import AuthStorage from "../utils/authStorage";
 import BottomTabNavigator from "./bottomTab/BottomTab";
+import AuthStack from "./AuthStack/authStack";
+import Appstack from "./AppStack/appStack";
 
 export const RootNavigator = () => {
   const dispatch = useDispatch();
@@ -26,7 +27,7 @@ export const RootNavigator = () => {
 
   if (isLoading) return null;
 
-  // return userToken ? <AuthStack  /> : < />;
+  // return userToken ? <AuthStack  /> : < <Appstack /> />;
   return (
     <>
       {userToken == null || userToken == "" ? (

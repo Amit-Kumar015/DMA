@@ -1,9 +1,10 @@
+// ✅ Checkbox.js
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from './icon';
 import useTheme from '../hooks/useTheme';
 
-const Checkbox = ({ checked, onPress, customStyle }) => {
+const Checkbox = ({ checked, onPress, customStyle, color }) => {
   const { theme } = useTheme();
 
   return (
@@ -11,7 +12,7 @@ const Checkbox = ({ checked, onPress, customStyle }) => {
       <View style={styles.checkbox}>
         <Icon
           name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'}
-          color={checked ? "black" : "grey"}
+          color={color || (checked ? 'black' : 'grey')} // ✅ color override support
           size={24}
         />
       </View>
