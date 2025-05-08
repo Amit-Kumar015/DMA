@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -61,10 +61,12 @@ const ProfileScreen = () => {
   console.log("storeProfile",storedProfile)
   const [Profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [postsData, setPostsData] = useState({ count: 0, results: [] });
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   console.log("posts",posts)
   const [currentPage, setCurrentPage] = useState(1)
+    const [showLoading, setShowLoading] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState({
     ip_address: 'Fetching...',
     latitude: 'Fetching...',
@@ -85,8 +87,8 @@ const ProfileScreen = () => {
     if (profileData?.data?.id) {
       const storeProfileId = async () => {
         try {
-          await AsyncStorage.setItem('profile_id', profileData.data.id.toString());
-          console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.id);
+          await AsyncStorage.setItem('profile_id', profileData.data.user.id.toString());
+          console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.user.id);
         } catch (error) {
           console.error('❌ Error storing profile ID:', error);
         }
@@ -94,7 +96,20 @@ const ProfileScreen = () => {
       storeProfileId();
     }
   }, [profileData]);
-  
+  useEffect(() => {
+    if (profileData?.data?.id) {
+      const storeProfile = async () => {
+        try {
+          // Storing the profileData.id (not user.id)
+          await AsyncStorage.setItem('profile_id', profileData.data.id.toString());
+          console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.id); // Log the correct ID
+        } catch (error) {
+          console.error('❌ Error storing profile ID:', error);
+        }
+      };
+      storeProfile();
+    }
+  }, [profileData]);
 
 
   useEffect(() => {
@@ -170,7 +185,8 @@ const ProfileScreen = () => {
         formData.append('user_agent', finalDeviceInfo.user_agent);
 
         const apiResponse = await fetch(
-          'http://52.70.194.52/api/core/user-activities/a31f776e-efae-4b29-ad23-6c05808b1b04/',
+          `http://52.70.194.52/api/core/user-activities/${userId}/`,
+          
           {
             method: 'POST',
             headers: {
@@ -180,7 +196,6 @@ const ProfileScreen = () => {
             body: formData,
           },
         );
-
         if (apiResponse.ok) {
           console.log('Device info submitted successfully.');
         } else {
@@ -195,24 +210,25 @@ const ProfileScreen = () => {
     };
 
     fetchDeviceDetails();
-  }, []);
+  }, [])
 
-
-
-
-
+  useEffect(() => {
+    if (userData?.user?.id) {
+      setUserId(userData.user.id);
+      setStoredProfile(null); // ✅ clear previous user's profile pic
+    }
+  }, [userData]);
+  
   useFocusEffect(
     React.useCallback(() => {
       const fetchPersonalInfo = async () => {
-        if (!userId) {
-          console.warn('⚠️ userId is missing, skipping fetch.');
-          return;
-        }
+        const userIdToUse = userId || profileData?.data?.user?.id;
+        if (!userIdToUse) return;
   
         try {
           const accessToken = await AuthStorage.getAccessToken();
           const response = await axios.get(
-            `http://52.70.194.52/api/core/user-full-detail/${userId}/`,
+            `http://52.70.194.52/api/core/user-full-detail/${userIdToUse}/`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -232,13 +248,8 @@ const ProfileScreen = () => {
       };
   
       fetchPersonalInfo();
-    }, [userId])
+    }, [userId, profileData])
   );
-  useEffect(() => {
-    if (userData?.user?.id) {
-      setUserId(userData.user.id);
-    }
-  }, [userData]);  
   
   const onShare = async () => {
     try {
@@ -263,53 +274,95 @@ const ProfileScreen = () => {
    
  // <-- Run only when userId is availabl
   console.log('deviceinfo', deviceInfo);
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       // ✅ Save userType
+  //       if (userData?.user?.user_type) {
+  //         setUserType(userData.user.user_type);
+  //         await AsyncStorage.setItem('userType', userData.user.user_type);
+  //       } else {
+  //         const storedUserType = await AsyncStorage.getItem('userType');
+  //         if (storedUserType) {
+  //           setUserType(storedUserType);
+  //         }
+  //       }
+  
+  //       // ✅ Save userName from userData or personalProfile
+  //       if (userData?.user?.username) {
+  //         setUserName(userData?.user?.username);
+  //         await AsyncStorage.setItem('userName', userData?.user?.username);
+  //       } else if (personalProfile?.user?.username) {
+  //         setUserName(personalProfile?.user?.username);
+  //         await AsyncStorage.setItem('userName', personalProfile?.user?.username);
+  //       } else {
+  //         const storedUserName = await AsyncStorage.getItem('userName');
+  //         if (storedUserName) {
+  //           setUserName(storedUserName);
+  //         }
+  //       }
+  
+  //       // ✅ Save userId from personalProfile.data.id
+  //       if (userData?.user?.id) {
+  //         setUserId(userData.user.id);
+  //         await AsyncStorage.setItem('userId', userData.user.id);
+  //       } else {
+  //         const storedUserType = await AsyncStorage.getItem('userId');
+  //         if (storedUserType) {
+  //           setUserId(storedUserType);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching user data:', error);
+  //     }
+  //   };
+  
+  //   fetchUserData();
+  // }, [userData]);
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // ✅ Save userType
+        // Save userType
         if (userData?.user?.user_type) {
           setUserType(userData.user.user_type);
           await AsyncStorage.setItem('userType', userData.user.user_type);
         } else {
           const storedUserType = await AsyncStorage.getItem('userType');
-          if (storedUserType) {
-            setUserType(storedUserType);
-          }
+          if (storedUserType) setUserType(storedUserType);
         }
   
-        // ✅ Save userName from userData or personalProfile
+        // Save userName
         if (userData?.user?.username) {
-          setUserName(userData?.user?.username);
-          await AsyncStorage.setItem('userName', userData?.user?.username);
+          setUserName(userData.user.username);
+          await AsyncStorage.setItem('userName', userData.user.username);
         } else if (personalProfile?.user?.username) {
           setUserName(personalProfile?.user?.username);
           await AsyncStorage.setItem('userName', personalProfile?.user?.username);
         } else {
           const storedUserName = await AsyncStorage.getItem('userName');
-          if (storedUserName) {
-            setUserName(storedUserName);
-          }
+          if (storedUserName) setUserName(storedUserName);
         }
   
-        // ✅ Save userId from personalProfile.data.id
+        // Save userId from userData or profileData
         if (userData?.user?.id) {
           setUserId(userData.user.id);
           await AsyncStorage.setItem('userId', userData.user.id);
         } else {
-          const storedUserType = await AsyncStorage.getItem('userId');
-          if (storedUserType) {
-            setUserId(storedUserType);
+          const storedUserId = await AsyncStorage.getItem('userId');
+          if (storedUserId) {
+            setUserId(storedUserId);
+          } else if (profileData?.data?.user?.id) {
+            setUserId(profileData.data.user.id);
           }
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('❌ Error fetching user data:', error);
       }
     };
   
     fetchUserData();
-  }, [userData]);
-  
-
+  }, [userData, personalProfile, profileData]);
   console.log('Current userType:', userType);
   const fetchPosts = async (url = 'http://52.70.194.52/api/feed/posts/list/user/?page=1&page_size=5', allPosts = []) => {
     try {
@@ -327,7 +380,8 @@ const ProfileScreen = () => {
       }
   
       const data = await response.json();
-  
+       console.log("data",data)
+       setPostsData(data);
       // Append new posts to existing ones
       const combinedPosts = [...allPosts, ...(data.results || [])];
   
@@ -347,9 +401,11 @@ const ProfileScreen = () => {
 
  
   
-  useEffect(() => {
-    fetchPosts(); // Starts from page 1
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts(); // This causes re-fetch every time you return
+    }, [])
+  );
   
   const showBusinessContent =
     businessProfile?.message?.includes('Business Info created successfully') ||
@@ -364,7 +420,10 @@ const ProfileScreen = () => {
       return (
         <TouchableOpacity 
           style={style.card} 
-          onPress={() => navigation.navigate('PostDetail', { postId: item.id })}>
+          onPress={() => navigation.navigate('PostDetail', { 
+            postId: item.id,
+            allPosts: posts
+          })}>
           {item.media_type === 'video' ? (
             <Video
               source={{ uri: item.media_url }}
@@ -388,11 +447,12 @@ const ProfileScreen = () => {
   return (
     <SafeAreaView style={style.Container}>
     {/* Header */}
+    <View style={{paddingHorizontal:16}}>
     <Header
-      showBack={true}
-      title={userName}
+  showBack={true}
+  title={userName || storedProfile?.username || storedProfile?.first_name || 'User'} 
       rightComponent={
-        <View style={{ flexDirection: 'row', gap: 15 }}>
+        <View style={{ flexDirection: 'row', gap: 15, }}>
           <TouchableOpacity onPress={() => navigation.navigate('uploadreels')}>
             <AntDesign name="plussquareo" size={23} color={'black'} />
           </TouchableOpacity>
@@ -405,11 +465,14 @@ const ProfileScreen = () => {
         </View>
       }
     />
-
+</View>
     {/* Avatar & Name */}
-    <View style={{ marginTop: 10, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ marginTop: 10, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+    {storedProfile === null ? (
+  <ActivityIndicator />
+) : (
   <Avatar
-    size={80}
+    size={70}
     rounded
     overlayContainerStyle={{
       backgroundColor: theme.$surface,
@@ -418,73 +481,100 @@ const ProfileScreen = () => {
     }}
     source={
       storedProfile?.profile_pic
-        ? { uri: `${storedProfile.profile_pic}?time=${new Date().getTime()}` }
+        ? { uri: `${storedProfile.profile_pic}` }
         : require('../assets/icon/profiles.png')
     }
   />
+)}
+
 
   {/* Stats */}
-  <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1,marginTop:15 }}>
-    <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text h4 semiBold>0</Text>
-      <Text h5 semiBold>Posts</Text>
-    </View>
-    <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text h4 semiBold>0</Text>
-      <Text h5 semiBold>Followers</Text>
-    </View>
-    <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text h4 semiBold>0</Text>
-      <Text h5 semiBold>Following</Text>
-    </View>
+  <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 15 }}>
+  <View style={{ alignItems: 'center', minWidth: '20%' }}>
+    <Text h4 semiBold numberOfLines={1}>{postsData.count}</Text>
+    <Text h5 semiBold numberOfLines={1}>Posts</Text>
+  </View>
+  <View style={{ alignItems: 'center', minWidth: '30%' }}>
+    <Text h4 semiBold numberOfLines={1}>0</Text>
+    <Text h5 semiBold numberOfLines={1}>Followers</Text>
+  </View>
+  <View style={{ alignItems: 'center', minWidth: '30%' }}>
+    <Text h4 semiBold numberOfLines={1}>0</Text>
+    <Text h5 semiBold numberOfLines={1}>Following</Text>
   </View>
 </View>
-  <View style={{ paddingHorizontal:16}}>
+
+
+</View>
+  <View style={{ paddingHorizontal:20}}>
+
   <Text h5 >{userName} </Text>
   {storedProfile && (
   <Text h5  bold>{storedProfile.first_name} {storedProfile.last_name}</Text>
 )}
 </View>
 <View style={{ flexDirection: 'row', gap: 10, justifyContent:"center",top:10 }}>
-<ButtonWithPushBack customContainerStyle={{ width: 150 }}>
+<ButtonWithPushBack customContainerStyle={{ width: 120 }}>
   <PrimaryButton
-    title="EditProfile"
+    size="small" // correct way to trigger smaller font/button
+    title="Edit Profile"
     onPress={() => {
       setSelected('edit');
       navigation.navigate('EditScreen');
     }}
-    customsBg={selected === 'edit' ? '#000' : '#D3D3D3'} // Black if selected
+    customsBg={selected === 'edit' ? '#000' : 'transparent'} // Black if selected, else transparent
     titleStyle={{
-      color: selected === 'edit' ? '#fff' : '#333', // White text if selected
+      color: selected === 'edit' ? '#fff' : '#000', // White if selected, else black
+    }}
+    buttonStyle={{
+      borderWidth: 1,
+      borderColor: '#000',
     }}
   />
 </ButtonWithPushBack>
 
-<ButtonWithPushBack customContainerStyle={{ width: 150 }}>
+<ButtonWithPushBack customContainerStyle={{ width: 120 }}>
   <PrimaryButton
-    title="ShareProfile"
+     size="small" 
+    title="Share Profile"
     onPress={() => {
       setSelected('share'); // 👈 this was missing
       onShare();
     }}
-    customsBg={selected === 'share' ? '#000' : '#D3D3D3'}
+    customsBg={selected === 'share' ? '#000' : 'transparent'}
     titleStyle={{
-      color: selected === 'share' ? '#fff' : '#333',
+      color: selected === 'share' ? '#fff' : '#000',
+    }}
+    buttonStyle={{
+      borderWidth: 1,
+      borderColor: '#000',
     }}
   />
 </ButtonWithPushBack>
 
     </View>
-    <View style={{ flex: 1, marginTop: 10 }}>
+    <View style={{ flex: 1, marginTop: 20 }}>
   
-        <FlatList
-          data={posts}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          showsVerticalScrollIndicator={false}
+  <FlatList
+    data={posts}
+    renderItem={renderItem}
+    keyExtractor={(item) => item.id}
+    numColumns={3}
+    showsVerticalScrollIndicator={false}
+    ListEmptyComponent={
+      !showLoading && (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
+          <Text h4 bold>No data found</Text>
+          {/* <Image
+            source={require('../assets/icon/attendence.webp')} // <-- apna image path yaha dena
+            style={{ width: 250, height: 250, resizeMode: 'cover' }}
+          /> */}
+        </View>
+      )
+    }
+  />
 
-        />
+        
     
 </View>
 
@@ -498,18 +588,6 @@ const ProfileScreen = () => {
         />
       </ButtonWithPushBack>
     </View>
-
-
-    {showPersonalContent && (
-      <View style={{ alignItems: 'center', marginTop: 20 }}>
-        <Text h4 bold style={{ color: 'blue' }}>
-          Welcome, Personal User!
-        </Text>
-        <Text h4 thin style={{ color: theme.$lightText }}>
-          Enjoy Your Personalized Dashboard
-        </Text>
-      </View>
-    )}
   </SafeAreaView>
 );
 };
@@ -522,7 +600,7 @@ const style = StyleSheet.create({
     // height: hp('100%')
     flex:1,
     backgroundColor:"#FFFFFF",
-    paddingHorizontal: wp('4%'),
+  
   },
   editProfileButton: {
     marginTop: 12,

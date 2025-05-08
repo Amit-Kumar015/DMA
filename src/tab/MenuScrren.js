@@ -75,6 +75,7 @@ const MenuOptionScreen = () => {
             await AsyncStorage.removeItem('userType');
             await AsyncStorage.removeItem('userName');
             await AsyncStorage.removeItem('userId');
+            // await AsyncStorage.removeItem('profile_id');
             // await  AsyncStorage.removeItem('profile_id');
 
             dispatch(setUserData(null));

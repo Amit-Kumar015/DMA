@@ -41,6 +41,7 @@ import {
   setData,
   setPersonalProfile,
 } from '../slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
   const {theme} = useTheme();
@@ -104,7 +105,6 @@ export default function Login() {
           }),
         );
         dispatch(setData(response?.user));
-
         // ✅ Fetch personal & business profiles after login
 
         showMessage({
@@ -129,7 +129,7 @@ export default function Login() {
           err.response.data?.message || 'Invalid email/phone or password.',
         );
       } else {
-        setError('Network error. Please check your connection.');
+        setError('Invalid email/phone or password');
       }
     }
   };
@@ -219,6 +219,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: wp('4%'),
+    backgroundColor:"#ffffff"
   },
   wrapper: {
     flex: 1,

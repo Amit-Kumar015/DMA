@@ -7,17 +7,21 @@ buildscript {
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.0.21"
     }
-    repositories {
-         google()
+      repositories {
+        google()
         mavenCentral()
-        maven { url 'https://maven.google.com' }
-        maven { url "https://www.jitpack.io" }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:8.1.0")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")  
+        classpath("com.google.gms:google-services:4.4.0") // Firebase plugin
     }
 }
 
-apply plugin: "com.facebook.react.rootproject"
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url("$rootDir/../node_modules/react-native/android") }
+    }
+}

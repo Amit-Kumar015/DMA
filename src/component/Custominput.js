@@ -6,24 +6,34 @@ import {
 } from "react-native-responsive-screen";
 import Text from "./Text";
 
-const Custominput = ({ width, height, title, marginTop, value, onValueChange, multiline,  placeholder = "", }) => {
-    const inputRef = useRef(null);  
+const Custominput = ({
+    width = "84%",         // Default width
+    height = "7%",          // Default height
+    title,
+    marginTop = 0,
+    value,
+    onValueChange,
+    multiline = false,
+    placeholder = "",
+}) => {
+    const inputRef = useRef(null);
 
     return (
         <View style={{ marginTop }}>
-            <Text h4 semiBold style={styles.title}>{title}</Text>
+            {title ? (
+                <Text h4 semiBold style={styles.title}>{title}</Text>
+            ) : null}
             <TextInput
-                ref={inputRef}  
-                value={value} 
-                placeholder={placeholder} 
-                // ✅ ADD THIS
+                ref={inputRef}
+                value={value}
+                placeholder={placeholder}
                 style={[
-                    styles.colinput, 
-                    { 
-                        width: wp(width), 
+                    styles.colinput,
+                    {
+                        width: wp(width),
                         height: hp(height),
-                        textAlignVertical: multiline ? "top" : "center", // ✅ Fix for multiline input
-                    }
+                        textAlignVertical: multiline ? "top" : "center",
+                    },
                 ]}
                 placeholderTextColor="#A9A9A9"
                 onChangeText={(text) => {
@@ -36,8 +46,6 @@ const Custominput = ({ width, height, title, marginTop, value, onValueChange, mu
         </View>
     );
 };
-
-
 export default Custominput;
 
 const styles = StyleSheet.create({

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import useTheme from '../hooks/useTheme';
 
-const Card = ({ children, style = {}, third = false, secondary = false }) => {
+const Card = ({ children, style = {}, third = false, secondary = false ,borderWidth = 1}) => {
   const { theme } = useTheme();
 
   const bgColor = third
@@ -11,7 +11,7 @@ const Card = ({ children, style = {}, third = false, secondary = false }) => {
     ? theme.$secondaryCard
     : theme.$background;
 
-  return <View style={[styles.card, { backgroundColor: bgColor }, style]}>{children}</View>;
+  return <View style={[styles.card, { backgroundColor: bgColor, borderWidth }, style]}>{children}</View>;
 };
 
 export default Card;

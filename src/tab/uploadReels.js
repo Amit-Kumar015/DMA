@@ -10,6 +10,7 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Video from 'react-native-video';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -39,12 +40,17 @@ const UploadReels = () => {
   const [videoSize, setVideoSize] = useState(null); // 🆕 New state to track compressed size
   const [selectedMainCategory, setSelectedMainCategory] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-
+    const [interestData, setInterestData] = useState([]);
+        const [filteredData, setFilteredData] = useState([]);
+    console.log('in',interestData)
   const userData = useSelector(state => state.user.userData);
   console.log('userData1', userData);
   const [userId, setUserId] = useState('');
   console.log('userId', userId);
-
+  const formattedData = filteredData.map(item => ({
+    key: item, 
+    value: item
+  }));
   const handleHashtagChange = (text) => {
     if (text === '') {
       setHashtag('');
@@ -62,7 +68,32 @@ const UploadReels = () => {
     }
   };
   
+  useEffect(() => {
+    const getInterest = async () => {
+        try {
+            const accessToken = await AuthStorage.getAccessToken();
+            const response = await fetch(`http://52.70.194.52/api/core/all-interests`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
 
+            const result = await response.json();
+            if (response.ok) {
+                console.log('✅ Interests Fetched:', result);
+                setInterestData(result.interests); 
+                setFilteredData(result.interests); 
+            } else {
+                console.error('❌ Error Fetching Interests:', result);
+            }
+        } catch (error) {
+            console.error('🔥 Network Error:', error);
+        }
+    };
+
+    getInterest();
+}, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -244,13 +275,6 @@ const UploadReels = () => {
       },
     );
   };
-  const mainCategories = [
-    {key: 'retail', value: 'Retail'},
-    {key: 'hospitality', value: 'Hospitality'},
-    {key: 'it_services', value: 'IT Services'},
-    {key: 'education', value: 'Education'},
-    {key: 'healthcare', value: 'Healthcare'},
-  ];
   const startVideoUpload = () => {
     setIsUploading(true);
     setUploadProgress(0);
@@ -335,24 +359,28 @@ const UploadReels = () => {
 
   return (
     <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={hp('10%')} // Adjust if needed
+    >
       <Header showBack={true} title="Upload Reel" />
 
-      {/* Dismiss keyboard on touch outside */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
-          contentContainerStyle={{flexGrow: 1, paddingBottom: 20,paddingHorizontal:16}}
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: hp('10%') }}
+        >
           {/* Upload Box */}
           <View style={styles.uploadBox}>
-            {/* <MaterialIcons name="file-upload" size={36} color="black" /> */}
-            <Text h5 semiBold style={{marginVertical: hp('1.5%')}}>
+            <Text h5 semiBold style={{ marginVertical: hp('1.5%') }}>
               Tap to upload or Record
             </Text>
 
             {media?.mediaType === 'image' && (
               <Image
-                source={{uri: media.uri}}
+                source={{ uri: media.uri }}
                 style={styles.mediaPreview}
                 resizeMode="cover"
               />
@@ -360,7 +388,7 @@ const UploadReels = () => {
 
             {media?.mediaType === 'video' && (
               <Video
-                source={{uri: media.uri}}
+                source={{ uri: media.uri }}
                 style={styles.mediaPreview}
                 resizeMode="cover"
                 controls
@@ -371,13 +399,15 @@ const UploadReels = () => {
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={handleCameraOpen}>
+                onPress={handleCameraOpen}
+              >
                 <Ionicons name="camera" size={24} color="black" />
                 <Text>Camera</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={handleGalleryOpen}>
+                onPress={handleGalleryOpen}
+              >
                 <Ionicons name="image" size={24} color="black" />
                 <Text>Gallery</Text>
               </TouchableOpacity>
@@ -392,7 +422,7 @@ const UploadReels = () => {
                   <View
                     style={[
                       styles.progressBarFill,
-                      {width: `${uploadProgress}%`},
+                      { width: `${uploadProgress}%` },
                     ]}
                   />
                 </View>
@@ -402,11 +432,13 @@ const UploadReels = () => {
             {!isUploading &&
               uploadProgress === 100 &&
               media?.mediaType === 'video' && (
-                <Text style={styles.videoInfo}>Video size: {videoSize} MB</Text>
+                <Text style={styles.videoInfo}>
+                  Video size: {videoSize} MB
+                </Text>
               )}
           </View>
 
-          {/* Caption */}
+          {/* Caption Input */}
           <View style={styles.inputContainer}>
             <TextInputEml
               placeholder="Write a caption"
@@ -415,56 +447,58 @@ const UploadReels = () => {
               value={caption}
               onChangeText={setCaption}
               maxLength={100}
+              height={80}
             />
             <Text style={styles.charInside}>{`${caption.length}/100`}</Text>
           </View>
 
-          {/* Hashtag */}
+          {/* Hashtag Input */}
           <View style={styles.inputContainer}>
-         <TextInputEml
-  placeholder="Write a Hashtag"
-  style={styles.input}
-  placeholderTextColor="#777"
-  value={hashtag}
-  onChangeText={handleHashtagChange}
-  maxLength={100}
-/>
-            {/* <Text style={styles.charInside}>{`${hashtag.length}/100`}</Text> */}
+            <TextInputEml
+              placeholder="Write a Hashtag"
+              style={styles.input}
+              placeholderTextColor="#777"
+              value={hashtag}
+              onChangeText={handleHashtagChange}
+              maxLength={100}
+              height={80}
+            />
           </View>
 
           {/* Category Dropdown */}
           <View style={styles.inputContainer}>
             <SingleSelect
-              arrayData={mainCategories}
+              arrayData={formattedData}
               uniqueId="Category"
               selected={selectedMainCategory}
               placeholder="Category"
               noDataText="No data found"
               search={false}
               selectedCb={(key, val) => {
-                setSelectedMainCategory({key: val.key, value: val.value});
+                setSelectedMainCategory({ key: val.key, value: val.value });
               }}
             />
           </View>
+
+          {/* Upload Button */}
+          <View style={styles.fixedBottom}>
+            <ButtonWithPushBack customContainerStyle={{ marginVertical: 30 }}>
+              <PrimaryButton
+                title="Upload"
+                onPress={uploadReel}
+                disabled={isUploading}
+                loading={isUploading}
+                loadingProps={<ActivityIndicator />}
+                style={{ opacity: isUploading ? 0.5 : 1 }}
+                buttonStyle={{ width: '70%' }}
+              />
+            </ButtonWithPushBack>
+          </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-
-      {/* Bottom Upload Button */}
-      <View style={styles.fixedBottom}>
-      <ButtonWithPushBack customContainerStyle={{marginVertical: 30}}>
-  <PrimaryButton
-    title="Upload"
-    onPress={uploadReel}
-    disabled={isUploading}
-    loading={isUploading}
-    loadingProps={<ActivityIndicator />}
-    style={{opacity: isUploading ? 0.5 : 1}}
-    buttonStyle={{width: '70%'}}
-  />
-</ButtonWithPushBack>
-      </View>
-    </View>
-  );
+    </KeyboardAvoidingView>
+  </View>
+);
 };
 
 export default UploadReels;
@@ -472,16 +506,8 @@ export default UploadReels;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingHorizontal: wp('5%'),
-  },
-  fixedBottom: {
-    position: 'absolute',
-    bottom: hp('2%'), 
-    width: '100%', 
-    alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    left: 20, 
+    paddingHorizontal: wp('5%'),
+    backgroundColor: '#ffffff',
   },
   uploadBox: {
     borderWidth: 1,
@@ -542,5 +568,10 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#4caf50',
     borderRadius: 5,
+  },
+  fixedBottom: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: hp('4%'),
   },
 });

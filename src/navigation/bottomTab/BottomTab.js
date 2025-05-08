@@ -21,13 +21,142 @@ import DmaHome from '../../tab/DmahomeScreen';
 import { Image } from 'react-native';
 import ReelsScreen from '../../tab/ReelsScreen';
 import ProfileScreen from '../../tab/Profile';
+import { useFocusEffect } from '@react-navigation/native';
+import AuthStorage from '../../utils/authStorage';
+import axios from 'axios';
 // const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 function BottomTabNavigator() {
   const dispatch = useDispatch();
   const Appstack = require("../AppStack/appStack").default;
+  const userData = useSelector(state => state.user.userData);
+    console.log('userData', userData);
+    const [userType, setUserType] = useState('');
+    const [userName, setUserName] = useState('');
+    console.log('usersss', userType);
+    console.log('userName', userName);
+    const businessProfile = useSelector(state => state.auth.businessProfile);
+    console.log('Business Name:', businessProfile);
+    const profileData = useSelector((state) => state.profile.Profile);
+    console.log('🙌 Profile Data:', profileData);
+    const personalProfile = useSelector(state => state.auth.personalProfile);
+    console.log('persinaldata', personalProfile);
+    const [userId, setUserId] = useState('');
+    console.log("userId",userId)
+    const [storedProfile, setStoredProfile] = useState(null);
+    console.log("storeProfile",storedProfile)
 
   const [showTab, setShowtab] = useState('flex');
+
+  useEffect(() => {
+    if (profileData?.data?.id) {
+      const storeProfileId = async () => {
+        try {
+          await AsyncStorage.setItem('profile_id', profileData.data.user.id.toString());
+          console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.user.id);
+        } catch (error) {
+          console.error('❌ Error storing profile ID:', error);
+        }
+      };
+      storeProfileId();
+    }
+  }, [profileData]);
+    
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Save userType
+        if (userData?.user?.user_type) {
+          setUserType(userData.user.user_type);
+          await AsyncStorage.setItem('userType', userData.user.user_type);
+        } else {
+          const storedUserType = await AsyncStorage.getItem('userType');
+          if (storedUserType) setUserType(storedUserType);
+        }
+  
+        // Save userName
+        if (userData?.user?.username) {
+          setUserName(userData.user.username);
+          await AsyncStorage.setItem('userName', userData.user.username);
+        } else if (personalProfile?.user?.username) {
+          setUserName(personalProfile?.user?.username);
+          await AsyncStorage.setItem('userName', personalProfile?.user?.username);
+        } else {
+          const storedUserName = await AsyncStorage.getItem('userName');
+          if (storedUserName) setUserName(storedUserName);
+        }
+  
+        // Save userId from userData or profileData
+        if (userData?.user?.id) {
+          setUserId(userData.user.id);
+          await AsyncStorage.setItem('userId', userData.user.id);
+        } else {
+          const storedUserId = await AsyncStorage.getItem('userId');
+          if (storedUserId) {
+            setUserId(storedUserId);
+          } else if (profileData?.data?.user?.id) {
+            setUserId(profileData.data.user.id);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error fetching user data:', error);
+      }
+    };
+  
+    fetchUserData();
+  }, [userData, personalProfile, profileData]);
+    useEffect(() => {
+      if (userData?.user?.id) {
+        setUserId(userData.user.id);
+        setStoredProfile(null); // ✅ clear previous user's profile pic
+      }
+    }, [userData]);
+  useEffect(() => {
+    if (profileData?.data?.id) {
+      const storeProfile = async () => {
+        try {
+          // Storing the profileData.id (not user.id)
+          await AsyncStorage.setItem('profile_id', profileData.data.id.toString());
+          console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.id); // Log the correct ID
+        } catch (error) {
+          console.error('❌ Error storing profile ID:', error);
+        }
+      };
+      storeProfile();
+    }
+  }, [profileData]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchPersonalInfo = async () => {
+        const userIdToUse = userId || profileData?.data?.user?.id;
+        if (!userIdToUse) return;
+  
+        try {
+          const accessToken = await AuthStorage.getAccessToken();
+          const response = await axios.get(
+            `http://52.70.194.52/api/core/user-full-detail/${userIdToUse}/`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+  
+          if (response?.data) {
+            console.log('📥 Personal Info API response:', response.data);
+            setStoredProfile(response.data);
+          } else {
+            console.error('⚠️ API returned null or no data');
+          }
+        } catch (error) {
+          console.error('❌ Error fetching user data:', error);
+        }
+      };
+  
+      fetchPersonalInfo();
+    }, [userId, profileData])
+  )
   const hideTabbar = (hide = false) => {
     // console.log(hide,'hide======')
     if (hide == false) {
@@ -73,12 +202,20 @@ function BottomTabNavigator() {
             marginLeft: -20,
             fontFamily: 'Yaldevi-Regular',
           },
+          // tabBarStyle: {
+          //   height: 65,
+          //   // backgroundColor: '#263d2d',
+          //   display: showTab,
+          // },
           tabBarStyle: {
-            height: 65,
-            // backgroundColor: '#263d2d',
+            height: 70,
             display: showTab,
+            backgroundColor: '#fff',
+            borderTopWidth: 0,
+            // elevation: 10,
           },
-          // tabBarStyle: {height: 50, backgroundColor: '#def',display: 'flex',},
+          
+          // // tabBarStyle: {height: 80, backgroundColor: '#ffffff',display: 'flex',},
           // tabBarInactiveTintColor: '#f1a722',
           tabBarInactiveTintColor: '#000',
           tabBarActiveTintColor: '#f1a722',
@@ -90,23 +227,41 @@ function BottomTabNavigator() {
               return <Ionicons name={iconName} size={25} color={color} />;
             }
 
-          //   if (route.name === "Reels") {
-          //     return (
-          //     <Image 
-          //     source={require('../../assets/icon/reels.png')} 
-          //     style={{ width: 25, height: 25, tintColor: 'black' }} 
-          //   />
-          // )}
-          
-          
-            if (route.name === "Dma") {
+            if (route.name === "Reels") {
               return (
+              <Image 
+              source={require('../../assets/icon/reels.png')} 
+              style={{ width: 25, height: 25, tintColor: 'black' }} 
+            />
+          )}
+          
+          
+          if (route.name === "Dma") {
+            return (
+              <View
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 35,
+                  backgroundColor: 'black',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 10, // elevate from bottom
+                  //  elevation: 5,      // Android shadow
+                  // shadowColor: '#ffffff',
+                  // shadowOffset: { width: 0, height: 2 },
+                  // shadowOpacity: 0.25,
+                  // shadowRadius: 3.84,
+                }}
+              >
                 <Image 
-                  source={require('../../assets/icon/mainlogo.png')} 
-                  style={{ width: 29, height: 40, tintColor: 'black' }} 
+                  source={require('../../assets/icon/login.jpg')} 
+                  style={{ width: 40, height: 40,borderRadius:20  }} 
                 />
-              );
-            }
+              </View>
+            );
+          }
+          
             if (route.name === "Search") {
               iconName = focused ? 'saved-search' : 'search';
               return <MaterialIcons name={iconName} size={30} color={color || 'black'} />;
@@ -119,7 +274,11 @@ function BottomTabNavigator() {
               // Replace this with user image from Redux or AsyncStorage if needed
               return (
                 <Image
-                  source={require('../../assets/icon/profiles.png')} // 👈 replace with your profile image
+                source={
+                  storedProfile?.profile_pic
+                    ? { uri: storedProfile.profile_pic }
+                    : require('../../assets/icon/profiles.png') // fallback image
+                }
                   style={{
                     width: 26,
                     height: 26,
@@ -138,14 +297,14 @@ function BottomTabNavigator() {
           name={"Home"}
           component={HomeScreen}
         />
-          {/* <Tab.Screen
+          <Tab.Screen
           name={"Reels"}
           component={ReelsScreen}
           options={({route, navigation}) => ({
             // title: trans('My Store'),
-          })}/> */}
+          })}/>
       
-         <Tab.Screen
+         {/* <Tab.Screen
           name={"Dma"}
           component={DmaHome}
           options={({route, navigation}) => ({
@@ -154,7 +313,18 @@ function BottomTabNavigator() {
           // options={{
           //   tabBarButton: props => <CustomTabBarButton route="home" {...props} />,
           // }}
-        /> 
+        />  */}
+        <Tab.Screen
+  name="Dma"
+  component={DmaHome}
+  options={{
+    tabBarItemStyle: {
+      // position: 'absolute',
+      // top: -25, // push up to float
+    },
+  }}
+/>
+
         {/* subjectName = '', chapterName = '', examSet = '' */}
         <Tab.Screen
           name={"Search"}

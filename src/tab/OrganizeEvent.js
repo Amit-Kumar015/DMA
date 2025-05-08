@@ -217,7 +217,8 @@ export default OrganizeEvent;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal:16
+        paddingHorizontal:16,
+        backgroundColor:"#ffffff"
     },
     searchWrapper: {
         paddingHorizontal: wp("5%"),
@@ -228,20 +229,27 @@ const styles = StyleSheet.create({
         padding: 0,
         elevation: 0,
         shadowOpacity: 0,
-        borderBottomWidth: 0,
-        borderTopWidth: 0,
-        borderLeftWidth: 0,
-        borderRightWidth: 0,
+        shadowColor: 'transparent',  // 👈 Add this
+        shadowOffset: { width: 0, height: 0 }, // 👈 Add this
+        shadowRadius: 0, // 👈 Add this
+        borderWidth: 0,
     },
+    
     inputContainer: {
         backgroundColor: "transparent",
         borderBottomWidth: 0,
+        elevation: 0,
+        shadowOpacity: 0,
+        shadowColor: 'transparent', // 👈 Add this too
+        shadowOffset: { width: 0, height: 0 },
+        shadowRadius: 0,
     },
+    
     inputStyle: {
-        fontSize: 16,
-        paddingVertical: 4,
-        paddingHorizontal: 0,
-        color: "#000",
+        // fontSize: 16,
+        // paddingVertical: 4,
+        // paddingHorizontal: 0,
+        // color: "#000",
     },
     selectedContainer: {
         flexDirection: "row",

@@ -8,7 +8,9 @@ import {
   FlatList,
   useWindowDimensions,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  Share,
+  Alert
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Video from 'react-native-video';
@@ -45,7 +47,26 @@ const HomeScreen = () => {
   useEffect(() => {
     fetchReels(1);
   }, []);
+  const onShare = async () => {
+    try {
+          const profileUrl = `https://yourapp.com/profile/${videos.id}`
+      const result = await Share.share({
+        message: `Check out my profile! Here is my ID: ${profileUrl}`, 
+      });
 
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type: ', result.activityType);
+        } else {
+          console.log('Content shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  };
   const getTimeAgo = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
@@ -112,23 +133,29 @@ const HomeScreen = () => {
     return (
       <View style={styles.postContainer}>
         {/* User Info Section */}
-        <View style={styles.userInfo}>
-        <Avatar
-  size={40}
-  rounded
-  overlayContainerStyle={{
-    backgroundColor: theme.$surface,
-    borderColor: theme.$secondaryText,
-    borderWidth: 1,
-  }}
-  source={{ uri: videos[0].user_profile_pic }} // 👈 Accessing the first video's profile pic
-/>
-          <View>
-            <Text h5 bold>{item.user}</Text>
-            <Text h5>{getTimeAgo(item.created_at)}</Text>
-          </View>
-        </View>
-  
+        <View style={{ ...styles.userInfo, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Avatar
+      size={40}
+      rounded
+      overlayContainerStyle={{
+        backgroundColor: theme.$surface,
+        borderColor: theme.$secondaryText,
+        borderWidth: 1,
+      }}
+      source={{ uri: item.user_profile_pic }}
+    />
+    <View style={{ marginLeft: 10 }}>
+      <Text h5 bold>{item.user}</Text>
+      <Text h5>{getTimeAgo(item.created_at)}</Text>
+    </View>
+  </View>
+
+  <TouchableOpacity onPress={() => Alert.alert('Coming Soon')}>
+    <Icon name="dots-three-vertical" type="entypo" size={20} color={theme.$secondaryText} />
+  </TouchableOpacity>
+</View>
+
         {/* Media Section: Image or Video */}
         <View style={{ width: screenWidth, height: finalMediaHeight, backgroundColor: isImage ? '#fff' : '#000' }}>
           {isImage ? (
@@ -162,7 +189,7 @@ const HomeScreen = () => {
         <TouchableOpacity onPress={() => alert('View clicked!')}>
           <Icon name="eye" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => alert('Share clicked!')}>
+        <TouchableOpacity onPress={() => onShare()}>
           <Icon name="share-all" size={24} color="black" />
         </TouchableOpacity>
       </View>

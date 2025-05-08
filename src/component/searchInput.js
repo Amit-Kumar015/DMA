@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   TouchableOpacity,
   StyleSheet,
@@ -9,6 +9,10 @@ import Card from './card';
 import useTheme from '../hooks/useTheme';
 import Icon from './icon'; // Import your Icon component
 import { fonts, sizes } from '../config/fonts';
+import Voice from '@react-native-voice/voice';
+
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+
 
 const Search = (props) => {
   const {
@@ -25,11 +29,82 @@ const Search = (props) => {
 
   const { theme: colors } = useTheme();
   const input = useRef(null);
-
+  const [isListening, setIsListening] = useState(false);
+  const [recording, setRecording] = useState(false);
   const onType = (text) => {
     onChangeText && onChangeText(text);
   };
+  const SpeechStartHandler = (err) => {
+      console.log("Speech started", err);
+  }
+  const SpeechEndHandler = (err) => {
+      setRecording(false);
+      console.log("Speech End", err);
+  }
 
+
+  const SpeechResultsHandler = (Result) => {
+      console.log("Speech Result", Result.value);
+      if (Result.value && Result.value.length > 0) {
+          onChangeText(Result.value[0]);
+      }
+  };
+
+
+
+  const SpeechErrorHandler = (err) => {
+      console.log("Speech Error", err);
+  }
+
+  const startReacording = async () => {
+      setRecording(true);
+      try {
+          await Voice.start("en-Us");
+      }
+      catch (err) {
+          console.log("Error in starting voice", err);
+      }
+  }
+
+
+
+  const stopRecording = async () => {
+      try {
+          await Voice.stop();
+          setRecording(false);
+      }
+      catch (err) {
+          console.log("Error in stopping voice", err);
+      }
+  }
+
+
+  useEffect(() => {
+      Voice.onSpeechStart = SpeechStartHandler;;
+      Voice.onSpeechEnd = SpeechEndHandler;
+      Voice.onSpeechResults = SpeechResultsHandler;
+      Voice.onSpeechError = SpeechErrorHandler;
+
+      return () => {
+          Voice.destroy().then(Voice.removeAllListeners);
+      }
+
+  }, [])
+
+
+  
+const requestMicPermission = async () => {
+  const result = await request(PERMISSIONS.ANDROID.RECORD_AUDIO);
+  if (result === RESULTS.GRANTED) {
+    console.log("Microphone permission granted");
+  } else {
+    console.log("Microphone permission denied");
+  }
+};
+
+useEffect(() => {
+  requestMicPermission();
+}, []);
   return (
     <View style={[styles.container, containerStyle]}>
       <Card
@@ -71,8 +146,8 @@ const Search = (props) => {
         )}
 
         {/* Mic Icon for Voice Input */}
-        <TouchableOpacity onPress={() => console.log('Voice Search Triggered')} style={styles.iconButton}>
-          <Icon name="mic" type="material" size={22} color="grey" />
+        <TouchableOpacity onPress={isListening ? stopRecording : startReacording} style={styles.iconButton}>
+          <Icon name={isListening ? "microphone-off" : "mic"} type="material" size={22} color="grey" />
         </TouchableOpacity>
       </Card>
     </View>

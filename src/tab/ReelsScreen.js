@@ -167,7 +167,7 @@ const ReelScreen = () => {
         <Image
           source={{uri: imageUrl}}
           style={styles.video} // reuse same style so image and video fit equally
-          resizeMode="cover"
+          resizeMode="contain"
         />
       )}
 

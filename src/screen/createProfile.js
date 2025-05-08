@@ -55,6 +55,12 @@ const CreateProfile = () => {
   const [profilePic, setProfilePic] = useState();
   const [error, setError] = useState();
   const [isVisible, setIsVisible] = useState();
+
+  const genderOptions = [
+    { value: 'male', key: 'male' },
+    { value: 'female', key: 'female' },
+    { value: 'other', key: 'other' },
+  ];
   const list = [
     { title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen() },
     {
@@ -151,7 +157,7 @@ const CreateProfile = () => {
     formData.append('user', userId);
     formData.append('first_name', firstName);
     formData.append('last_name', lastName);
-    formData.append('gender', gender);
+    formData.append('gender', gender?.value); 
     formData.append('location', location);
     formData.append('bio', bio);
     // formData.append('profile_pic', {
@@ -160,10 +166,11 @@ const CreateProfile = () => {
     //   type: 'image/jpeg',
     // });
     if (profilePic) {
+      const fileName = `profile_${Date.now()}.jpg`; // unique name
       formData.append('profile_pic', {
         uri: profilePic,
         type: 'image/jpeg',
-        name: 'profile.jpg',
+        name: fileName,
       });
     }
     try {
@@ -207,6 +214,14 @@ const CreateProfile = () => {
       Alert.alert('Something went wrong! Please check your connection.');
     }
   };
+
+  const handleGenderSelect = (uniqueId, selectedOption) => {
+    setGender(selectedOption);  // Updating selected gender
+    console.log('Selected Gender:', selectedOption);
+  };
+  
+  const isFormValid = firstName && lastName && gender;
+  const isFormValids =  location;
   return (
     <SafeAreaView style={styles.Container}>
       {step === 0 && (
@@ -289,23 +304,34 @@ const CreateProfile = () => {
                 onValueChange={setLastName}
               />
             </View>
-
-            <Custominput
-              width="92%"
-              title="Gender"
-              marginTop={15}
-              value={gender}
-              onValueChange={setGender}
-            />
-
+<View style={{marginTop:10}}>
+            <SingleSelect
+        arrayData={genderOptions}
+        selected={gender}
+        selectedCb={handleGenderSelect}
+        uniqueId="gender"
+        placeholder="Select Gender"
+        noDataText="No gender options available"
+      />
+</View>
             {/* Fixed Next Button */}
-            <ButtonWithPushBack
+         
+              <ButtonWithPushBack
               customContainerStyle={{
                 width: '50%',
                 alignSelf: 'center',
                 marginTop: 50,
               }}>
-              <PrimaryButton title="Next" onPress={() => setStep(2)} />
+  <PrimaryButton
+    title="Next"
+    onPress={() => {
+      if (isFormValid) {
+        setStep(2);
+      }
+    }}
+    disabled={!isFormValid}
+  />
+  
             </ButtonWithPushBack>
           </View>
         </Slide>
@@ -335,12 +361,17 @@ const CreateProfile = () => {
               onValueChange={setBio}
             />
 
-            <ButtonWithPushBack customContainerStyle={{marginVertical: 50}}>
-              <PrimaryButton
-                title="Create Profile"
-                onPress={handleCreateProfile}
-              />
-            </ButtonWithPushBack>
+<ButtonWithPushBack customContainerStyle={{ marginVertical: 50 }}>
+  <PrimaryButton
+    title="Create Profile"
+    onPress={() => {
+      if (isFormValids) {
+        handleCreateProfile();
+      }
+    }}
+    disabled={!isFormValids}
+  />
+</ButtonWithPushBack>
           </View>
         </Slide>
       )}

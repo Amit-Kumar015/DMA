@@ -68,14 +68,14 @@ export default function BussinessProfile() {
   const [selectedSubSubCategory, setSelectedSubSubCategory] = useState('');
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.userData);
-  console.log('selected', selectedMainCategory);
+  // console.log('selected', selectedMainCategory);
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
   const [dob, setDob] = useState();
   const [gender, setGender] = useState();
   const [location, setLocation] = useState();
   const [bio, setBio] = useState();
-  const [logo, setLogo] = useState();
+  const [logo, setLogo] = useState(null);
 
   const list = [
     {title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen()},
@@ -289,7 +289,7 @@ export default function BussinessProfile() {
     formData.append('user', userId);
     formData.append('first_name', firstName);
     formData.append('last_name', lastName);
-    formData.append('gender', gender);
+    formData.append('gender', gender?.value); 
     formData.append('location', location);
     formData.append('bio', bio);
     // formData.append('profile_pic', {
@@ -298,10 +298,11 @@ export default function BussinessProfile() {
     //   type: 'image/jpeg',
     // });
     if (profilePic) {
+      const fileName = `profile_${Date.now()}.jpg`; // unique name
       formData.append('profile_pic', {
         uri: profilePic,
         type: 'image/jpeg',
-        name: 'profile.jpg',
+        name: fileName,
       });
     }
     try {
@@ -379,13 +380,21 @@ export default function BussinessProfile() {
 
     // Business logo
     if (logo) {
-      formData.append('business_logo', {
+      const fileName = `logo_${Date.now()}.jpg`;
+      formData.append('logo', {
         uri: logo,
         type: 'image/jpeg',
-        name: 'business_logo.jpg',
+        name: fileName,
       });
     }
-
+    // if (profilePic) {
+    //   const fileName = `profile_${Date.now()}.jpg`; // unique name
+    //   formData.append('profile_pic', {
+    //     uri: profilePic,
+    //     type: 'image/jpeg',
+    //     name: fileName,
+    //   });
+    // }
     // Optional: Print form data
     // for (let pair of formData.entries()) {
     //   console.log(`${pair[0]}: ${pair[1]}`);
@@ -443,7 +452,18 @@ export default function BussinessProfile() {
       Alert.alert('Something went wrong! Please check your connection.');
     }
   };
-
+  const genderOptions = [
+    { value: 'male', key: 'male' },
+    { value: 'female', key: 'female' },
+    { value: 'other', key: 'other' },
+  ];
+  const isFormValid = firstName && lastName && gender;
+  const isFormValids =  location;
+  const handleGenderSelect = (uniqueId, selectedOption) => {
+    setGender(selectedOption);  // Updating selected gender
+    console.log('Selected Gender:', selectedOption);
+  };
+  
   return (
     <SafeAreaView style={styles.Container}>
       {/* <Header showBack={true} /> */}
@@ -534,13 +554,16 @@ export default function BussinessProfile() {
               />
             </View>
 
-            <Custominput
-              width="92%"
-              title="Gender*"
-              marginTop={15}
-              value={gender}
-              onValueChange={setGender}
-            />
+            <View style={{marginTop:10}}>
+            <SingleSelect
+        arrayData={genderOptions}
+        selected={gender}
+        selectedCb={handleGenderSelect}
+        uniqueId="gender"
+        placeholder="Select Gender"
+        noDataText="No gender options available"
+      />
+</View>
 
             {/* Fixed Next Button */}
             <ButtonWithPushBack
@@ -549,11 +572,16 @@ export default function BussinessProfile() {
                 alignSelf: 'center',
                 marginTop: 50,
               }}>
-              <PrimaryButton
-                title="Next"
-                onPress={() => setStep(2)}
-                loadingProps={<ActivityIndicator />}
-              />
+             <PrimaryButton
+               title="Next"
+               onPress={() => {
+                 if (isFormValid) {
+                   setStep(2);
+                 }
+               }}
+               disabled={!isFormValid}
+               loadingProps={<ActivityIndicator />}
+             />
             </ButtonWithPushBack>
           </View>
         </Slide>
@@ -576,6 +604,7 @@ export default function BussinessProfile() {
             />
             <Custominput
               height="13%"
+              width="92%"
               title="About You"
               marginTop={15}
               value={bio}
@@ -585,7 +614,12 @@ export default function BussinessProfile() {
             <ButtonWithPushBack customContainerStyle={{marginVertical: 50}}>
               <PrimaryButton
                 title="Create Profile"
-                onPress={handleCreateProfile}
+                onPress={() => {
+                  if (isFormValids) {
+                    handleCreateProfile();
+                  }
+                }}
+                disabled={!isFormValids}
               />
             </ButtonWithPushBack>
           </View>
@@ -600,16 +634,16 @@ export default function BussinessProfile() {
             contentContainerStyle={styles.scrollContainer}
             keyboardShouldPersistTaps="handled">
             <View style={styles.avatarWrapper}>
-              <Avatar
-                size={wp('25%')}
-                rounded
-                overlayContainerStyle={{
-                  backgroundColor: theme.$surface,
-                  borderColor: theme.$secondaryText,
-                  borderWidth: 1,
-                }}
-                source={logo ? {uri: logo} : null}
-              />
+            <Avatar
+    size={wp('25%')}
+    rounded
+    overlayContainerStyle={{
+      backgroundColor: theme.$surface,
+      borderColor: theme.$secondaryText,
+      borderWidth: 1,
+    }}
+    source={logo ? {uri: logo} : null}
+  />
               <TouchableOpacity
                 onPress={handleImagePicker}
                 style={styles.cameraIcon}>
@@ -675,6 +709,7 @@ export default function BussinessProfile() {
             <View style={styles.ColRow}>
               <Custominput
                 title="Business Owner*"
+                  width="92%"
                 value={ownerName}
                 onValueChange={setOwnerName}
               />
@@ -710,6 +745,7 @@ export default function BussinessProfile() {
             <View style={{marginTop: hp('3%')}}>
               <Custominput
                 title="Business Name*"
+                  width="90%"
                 value={bussinessName}
                 onValueChange={setBussinessName}
               />
@@ -717,13 +753,15 @@ export default function BussinessProfile() {
             <View style={{marginTop: hp('3%')}}>
               <Custominput
                 title="Business Location*"
+                  width="90%"
                 value={businessLocation}
                 onValueChange={setBusinessLocation}
               />
             </View>
             <View style={{marginTop: hp('3%')}}>
               <Custominput
-                title="Mobile NumberP"
+                title="Mobile Number*"
+                  width="90%"
                 value={mobileNumber}
                 onValueChange={setMobileNumber}
                 keyboardType="email-address"
@@ -731,14 +769,16 @@ export default function BussinessProfile() {
             </View>
             <View style={{marginTop: hp('3%')}}>
               <Custominput
-                title="Website LinkP"
+                title="Website Link*"
+                  width="90%"
                 value={websiteLink}
                 onValueChange={setWebsiteLink}
               />
             </View>
             <View style={{marginTop: hp('3%')}}>
               <Custominput
-                title=" Email idP"
+                title=" Email id*"
+                  width="90%"
                 value={businessEmail}
                 onValueChange={setBusinessEmail}
                 keyboardType="email-address"

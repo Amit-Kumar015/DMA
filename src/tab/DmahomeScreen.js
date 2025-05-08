@@ -156,7 +156,7 @@
 // });
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import {
     heightPercentageToDP as hp,
@@ -169,71 +169,256 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from "../component/icon";
 import AntDesign
 from 'react-native-vector-icons/AntDesign';
+import AuthStorage from "../utils/authStorage";
+import axios from "axios";
 
 const businessData = [
     { text: "Attendance", icon: "checkmark-done-outline" },
     { text: "Members", icon: "people-outline" },
-    { text: "Batches", icon: "layers-outline" },
+    { text: "Batch", icon: "layers-outline" },
     { text: "Weekly Plan", icon: "calendar-outline" },
     { text: "Equiptment", icon: "fitness-outline" },
     { text: "Managing Finance", icon: "cash-outline" },
     { text: "Performance Update", icon: "bar-chart-outline" },
-    { text: "Marketing And Promotion", icon: "megaphone-outline" },
-    { text: "Organize Event", icon: "calendar-number-outline" },
+    { text: "Tournament Update", icon: "megaphone-outline" },
+    // { text: "Organize Event", icon: "calendar-number-outline" },
+    // { text: "Find Near By", icon: "search" },
+    { text: "Boost My Accademy", icon: "rocket-outline" },
     
+];
+const brandSpecificButtons = [
+    { text: "Boost My Brand", icon: "rocket-outline" },
+    { text: "Give Sponsor", icon: "hand-left-outline" },
+    { text: "Sell Your Products", icon: "cart-outline" },
+    { text: "Get Verified", icon: "calendar-number-outline" }, // 4th button you mentioned
 ];
 
 const normalUserData = [
     { text: "Attendance", icon: "checkmark-done-outline" },
-    { text: "Batches", icon: "layers-outline" },
-    { text: "Find Near By", icon: "search" },
+    { text: "Batch", icon: "layers-outline" },
+  
     { text: "Equiptment", icon: "fitness-outline" },
     { text: "Get Sponsored", icon: "fitness-outline" },
+   
+];
+const medicalSpecificButtons = [
+  { text: "Find Near By", icon: "search" },
+  { text: "Boost Profile", icon: "rocket-outline" },
+  { text: "Aware Campaign", icon: "megaphone-outline" },
+  { text: "Get Verified", icon: "checkmark-done-outline" },
+];
+
+const shopSpecificButtons = [
+  { text: "Sell Products", icon: "cart-outline" },
+  { text: "Manage Stock", icon: "cube-outline" },
+  { text: "Create Offer", icon: "pricetags-outline" },
 ];
 
 const DmaHome = () => {
     const navigation = useNavigation();
     const businessProfile = useSelector(state => state.auth.businessProfile);
+      const userData = useSelector(state => state.user.userData);
+      console.log('userData', userData);
     const [userType, setUserType] = useState('');
+      const profileData = useSelector((state) => state.profile.Profile);
+      console.log('🙌 Profile Data:', profileData);
+      const personalProfile = useSelector(state => state.auth.personalProfile);
+      console.log('persinaldata', personalProfile);
     const [profileMessage, setProfileMessage] = useState('');
-
+      const [userName, setUserName] = useState('');
+      console.log('usersss', userType);
+      console.log('userName', userName);
+      console.log('persinaldata', personalProfile);
+      const [userId, setUserId] = useState('');
+      console.log("userId",userId)
+      const [storedProfile, setStoredProfile] = useState(null);
+      console.log("storeProfile",storedProfile)
+    useEffect(() => {
+        console.log("userTye", userType);
+    }, [userType]);
+ 
     useEffect(() => {
         const fetchUserType = async () => {
-            try {
-                if (businessProfile?.message === "Business Info created successfully") {
-                    setProfileMessage(businessProfile.message);
-                    await AsyncStorage.setItem('profileMessage', businessProfile.message);
-                }
-
-                const storedUserType = await AsyncStorage.getItem('userType');
-                if (storedUserType) {
-                    setUserType(storedUserType);
-                }
-            } catch (error) {
-                console.error('Error fetching userType or profile message:', error);
+          try {
+            // Save userType
+            if (businessProfile?.message === "Business Info created successfully") {
+                             setProfileMessage(businessProfile.message);
+                                await AsyncStorage.setItem('profileMessage', businessProfile.message);
+                //             }
+             } if (userData?.user?.user_type) {
+              setUserType(userData.user.user_type);
+              await AsyncStorage.setItem('userType', userData.user.user_type);
+            } else {
+              const storedUserType = await AsyncStorage.getItem('userType');
+              if (storedUserType) setUserType(storedUserType);
             }
+      
+            const storedUserType = await AsyncStorage.getItem('userType');
+                if (storedUserType) {
+                     setUserType(storedUserType);
+                }
+          
+          } catch (error) {
+            console.error('❌ Error fetching user data:', error);
+          }
         };
-
+      
         fetchUserType();
-    }, [businessProfile]);
+      }, [userData, personalProfile, profileData,businessProfile]);
+      console.log('Current userType:', userType);
 
+      useFocusEffect(
+        React.useCallback(() => {
+          const fetchPersonalInfo = async () => {
+            const userIdToUse = userId || profileData?.data?.user?.id;
+            if (!userIdToUse) return;
+      
+            try {
+              const accessToken = await AuthStorage.getAccessToken();
+              const response = await axios.get(
+                `http://52.70.194.52/api/core/user-full-detail/${userIdToUse}/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                }
+              );
+      
+              if (response?.data) {
+                console.log('📥 Personal Info API response:', response.data);
+                setStoredProfile(response.data);
+              } else {
+                console.error('⚠️ API returned null or no data');
+              }
+            } catch (error) {
+              console.error('❌ Error fetching user data:', error);
+            }
+          };
+      
+          fetchPersonalInfo();
+        }, [userId, profileData])
+    )
+    useEffect(() => {
+        if (profileData?.data?.id) {
+          const storeProfileId = async () => {
+            try {
+              await AsyncStorage.setItem('profile_id', profileData.data.user.id.toString());
+              console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.user.id);
+            } catch (error) {
+              console.error('❌ Error storing profile ID:', error);
+            }
+          };
+          storeProfileId();
+        }
+      }, [profileData]);
+        
+      useEffect(() => {
+        const fetchUserData = async () => {
+          try {
+            // Save userType
+            if (userData?.user?.user_type) {
+              setUserType(userData.user.user_type);
+              await AsyncStorage.setItem('userType', userData.user.user_type);
+            } else {
+              const storedUserType = await AsyncStorage.getItem('userType');
+              if (storedUserType) setUserType(storedUserType);
+            }
+      
+            // Save userName
+            if (userData?.user?.username) {
+              setUserName(userData.user.username);
+              await AsyncStorage.setItem('userName', userData.user.username);
+            } else if (personalProfile?.user?.username) {
+              setUserName(personalProfile?.user?.username);
+              await AsyncStorage.setItem('userName', personalProfile?.user?.username);
+            } else {
+              const storedUserName = await AsyncStorage.getItem('userName');
+              if (storedUserName) setUserName(storedUserName);
+            }
+      
+            // Save userId from userData or profileData
+            if (userData?.user?.id) {
+              setUserId(userData.user.id);
+              await AsyncStorage.setItem('userId', userData.user.id);
+            } else {
+              const storedUserId = await AsyncStorage.getItem('userId');
+              if (storedUserId) {
+                setUserId(storedUserId);
+              } else if (profileData?.data?.user?.id) {
+                setUserId(profileData.data.user.id);
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error fetching user data:', error);
+          }
+        };
+      
+        fetchUserData();
+      }, [userData, personalProfile, profileData]);
+        useEffect(() => {
+          if (userData?.user?.id) {
+            setUserId(userData.user.id);
+            setStoredProfile(null); // ✅ clear previous user's profile pic
+          }
+        }, [userData]);
+      useEffect(() => {
+        if (profileData?.data?.id) {
+          const storeProfile = async () => {
+            try {
+              // Storing the profileData.id (not user.id)
+              await AsyncStorage.setItem('profile_id', profileData.data.id.toString());
+              console.log('✅ Profile ID stored in AsyncStorage:', profileData.data.id); // Log the correct ID
+            } catch (error) {
+              console.error('❌ Error storing profile ID:', error);
+            }
+          };
+          storeProfile();
+        }
+      }, [profileData]);
     // Prepare data based on user type
-    let finalData = userType === "business" || profileMessage === "Business Info created successfully"
-        ? [...businessData]
-        : [...normalUserData];
-
+    // const finalData = userType === "business" || profileMessage === "Business Info created successfully"
+    //     ? [...businessData]
+    //     : [...normalUserData];
+    // const finalData =
+    // userType === "business" || profileMessage === "Business Info created successfully"
+    //     ? (storedProfile?.businessinfo?.main_category === "Brand","Medical Service"
+    //         ? [...brandSpecificButtons]
+    //         : [...businessData])
+    //     : [...normalUserData];
     // Always include "Isha" item
-    const isIshaPresent = finalData.some(item => item.text === "");
-    if (!isIshaPresent) {
-        // finalData.push({
-            // text: "Isha",
-            // icon: "person-outline",
-            // screen: "IshaScreen", // Optional: Create this screen or handle navigation
-        // });
-    }
+    // const isIshaPresent = finalData.some(item => item.text === "");
+    // if (!isIshaPresent) {
+    //     finalData.push({
+    //         text: "Isha",
+    //         icon: "person-outline",
+    //         screen: "IshaScreen", // Optional: Create this screen or handle navigation
+    //     });
+    // }
+    let finalData = [];
 
+    const isBusiness = userType === "business" || profileMessage === "Business Info created successfully";
+    const mainCategory = storedProfile?.businessinfo?.main_category;
+    
+    if (isBusiness) {
+      switch (mainCategory) {
+        // case "Brand":
+        //   finalData = [...brandSpecificButtons];
+        //   break;
+        case "Medical Service":
+          finalData = [...medicalSpecificButtons];
+          break;
+        case "Shop":
+          finalData = [...shopSpecificButtons];
+          break;
+        default:
+          finalData = [...businessData];
+      }
+    } else {
+      finalData = [...normalUserData];
+    }
     return (
         <View style={styles.Container}>
+            <View style={{paddingHorizontal:16}}>
             <Header
                 showBack={true}
                 title="DMA"
@@ -249,8 +434,11 @@ const DmaHome = () => {
                             <Icon name="menu" size={23} color={'black'} />
                         </TouchableOpacity>
                     </View>
+                 
                 }
+                
             />
+               </View>
             <FlatList
                 data={finalData}
                 keyExtractor={(item) => item.text}
@@ -265,7 +453,7 @@ const DmaHome = () => {
                                 case "Weekly Plan":
                                     navigation.navigate("weeklyPlan");
                                     break;
-                                case "Batches":
+                                case "Batch":
                                     navigation.navigate("Batches");
                                     break;
                                 case "Attendance":
@@ -283,6 +471,15 @@ const DmaHome = () => {
                                     case "Get Sponsored":
                                         navigation.navigate("GetSponser");
                                         break;
+                                        case "Give Sponsor":
+                                            navigation.navigate("GiveSponser");
+                                            break;
+                                            case "Tournament Update":
+                                              navigation.navigate("Tournament");
+                                              break;
+                                              case "Performance Update":
+                                                navigation.navigate("Performance");
+                                                break;
                                 
                                
                             }
@@ -311,13 +508,15 @@ const styles = StyleSheet.create({
         marginHorizontal: wp("4%"),
         marginTop: 20,
         justifyContent: "center",
-        // backgroundColor: "#f2f3f4",
+        backgroundColor: "#f2f3f4",
+       
     },
     Container: {
         // width: wp("100%"),
         // height: hp("100%"),
-        // backgroundColor: "#ffffff",
-        flex:1
+        backgroundColor: "#ffffff",
+        flex:1,
+        // paddingHorizontal:16
         
     },
     icon: {

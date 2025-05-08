@@ -17,6 +17,13 @@ import MenuOptionScreen from "../../tab/MenuScrren";
 import OrganizeEvent from "../../tab/OrganizeEvent";
 import GetSponser from "../../tab/GetSponser";
 import EditProfile from "../../tab/EditScreen";
+import ProfileScreen from "../../tab/Profile";
+import UserProfile from "../../tab/UserProfile";
+import GiveSponser from "../../tab/GiveSponser";
+import PostDetailScreen from "../../tab/AllPostScreen";
+import TournamentScreen from "../../tab/TournamentScreen";
+import PerformanceUpdate from "../../tab/performanceUpdate";
+import TestScreen from "../../tab/TestScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -59,7 +66,11 @@ const Appstack = ({ userType }) => {
         component={SearchScreen}
       
       />
-    
+       <Stack.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
+      
+      />
       {/* <Stack.Screen name="DmaHome" component={DmaHome} /> */}
       <Stack.Screen name="Equiptment" component={EquipmentScreen} />
       <Stack.Screen name="weeklyPlan" component={weeklyPlan} />
@@ -72,6 +83,12 @@ const Appstack = ({ userType }) => {
       <Stack.Screen name="OrganizeEvent" component={OrganizeEvent} />
       <Stack.Screen name="GetSponser" component={GetSponser} />
       <Stack.Screen name="EditScreen" component={EditProfile} />
+      <Stack.Screen name="userProfile" component={UserProfile} />
+      <Stack.Screen name="GiveSponser" component={GiveSponser} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="Tournament" component={TournamentScreen} />
+      <Stack.Screen name="Performance" component={PerformanceUpdate} />
+      <Stack.Screen name="TestScreen" component={TestScreen} />
     </Stack.Navigator>
   );
 };

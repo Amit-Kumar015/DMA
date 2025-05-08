@@ -14,6 +14,7 @@ const PrimaryButton = (props) => {
     customsBg,
     disabled,
     icon,
+    onPress, // Capture onPress
     ...rest
   } = props;
 
@@ -21,21 +22,37 @@ const PrimaryButton = (props) => {
   const height = size === 'small' ? 41 : 42;
   const textColor = '#ffffff';
 
+  // Disable the onPress action if disabled is true
+  const handlePress = () => {
+    if (disabled) return; // Do nothing if disabled
+    if (onPress) onPress(); // Trigger the passed onPress function
+  };
+
   return (
     <ButtonRNE
       {...rest}
       buttonStyle={[
         styles.button,
-        { height, backgroundColor: disabled ? '#696969' : customsBg || '#000000' },
+        {
+          height,
+          backgroundColor: disabled ? '#696969' : customsBg || '#000000', // Handle disabled background color
+        },
         buttonStyle,
       ]}
       background={TouchableNativeFeedback.Ripple('rgba(50,49,52,0.79)', false)}
-      titleStyle={[styles.title, { color: textColor }, size === 'small' && styles.titleSmall, titleStyle]}
-      disabledStyle={{ opacity: 0.5 }} // Reduce opacity for disabled mode
-      disabledTitleStyle={{ color: textColor, opacity: 0.6 }}
+      titleStyle={[
+        styles.title,
+        { color: textColor },
+        size === 'small' && styles.titleSmall,
+        titleStyle,
+      ]}
+      disabled={disabled} // Handle the disabled state of the button
+      disabledStyle={{ opacity: 0.5 }} // Reduce opacity for disabled state
+      disabledTitleStyle={{ color: textColor, opacity: 0.6 }} // Adjust title opacity when disabled
       loadingProps={{ color: textColor, ...loadingProps }}
       icon={icon} // Pass the icon prop
       iconContainerStyle={styles.iconContainer}
+      onPress={handlePress} // Disable press functionality when disabled
     />
   );
 };

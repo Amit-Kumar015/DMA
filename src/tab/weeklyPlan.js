@@ -47,6 +47,7 @@ const WeeklyPlan = () => {
 const [descriptions, setDescriptions] = useState('');
 const [selectedDuration, setSelectedDuration] = useState(null); // Selected Duration Store
 const [subTasks, setSubTasks] = useState({});
+const [selectedPlanId, setSelectedPlanId] = useState(null);
 const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
   const toggleDaySelection = day => {
     if (selectedDays.includes(day)) {
@@ -63,18 +64,20 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
  
 
   useEffect(() => {
-    fetchSubTasks();
-  }, []);
+    if (selectedPlanId) {
+      fetchSubTasks();
+    }
+  }, [selectedPlanId]);
 
   const fetchSubTasks = async () => {
     try {
       const accessToken = await AuthStorage.getAccessToken();
       console.log("Access token retrieved:", accessToken);
-
+  
       if (!accessToken) {
         throw new Error("Access token is missing!");
       }
-
+  
       const response = await fetch('http://52.70.194.52/api/attendance/sub-tasks/', {
         method: 'GET',
         headers: {
@@ -82,33 +85,35 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           'Content-Type': 'application/json',
         },
       });
-
+  
       console.log("Response status:", response.status);
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to fetch sub-tasks: ${errorText}`);
       }
-
+  
       const data = await response.json();
       console.log("Fetched data:", data);
-
+  
       const tasksByDay = {};
-
+  
       data.forEach(task => {
-        if (!tasksByDay[task.day]) {
-          tasksByDay[task.day] = [];
+        // 👇👇 Yaha filter karna zaroori hai
+        if (task.weekly_plan === selectedPlanId) { 
+          if (!tasksByDay[task.day]) {
+            tasksByDay[task.day] = [];
+          }
+          tasksByDay[task.day].push(task);
         }
-        tasksByDay[task.day].push(task);
       });
-
+  
       setSubTasks(tasksByDay);
     } catch (error) {
       console.error('Error fetching sub-tasks:', error.message);
-    } finally {
-      // setLoading(false);
     }
   };
+  
 
   const fetchWeeklyPlans = async () => {
     try {
@@ -124,6 +129,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
       );
 
       const result = await response.json();
+      console.log("sjkks",result)
       if (response.ok) {
         setWeeklyPlans(result); // Save the fetched plans in state
       } else {
@@ -238,6 +244,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
   
   const fetchSelectedPlanDetails = async planId => {
     try {
+      console.log("planId",planId)
       const accessToken = await AuthStorage.getAccessToken();
       const response = await fetch(
         `http://52.70.194.52/api/attendance/weekly-plans/${planId}/`,
@@ -251,6 +258,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
    
       // console.log(response,"res")
       const result = await response.json();
+      console.log("result",result)
       if (response.ok) {
         setSelectedPlan(result); // Set selected plan details
       } else {
@@ -260,21 +268,22 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
       console.error('Network Error:', error);
     }
   };
-  const createSubTask = async (planId) => {
+  const createSubTask = async () => {
     try {
       console.log("createSubTask function invoked");
   
       const accessToken = await AuthStorage.getAccessToken();
       console.log("Access token retrieved:", accessToken);
-      const planId = selectedPlan.id;
+  
+      const planId = selectedPlanId;  // Use the selectedPlanId directly
       const formData = new FormData();
       formData.append('weekly_plan', planId); 
       formData.append('day', selectedDay.toLowerCase());
       formData.append('task_name', subPlan);
-    
-      console.log("plls",planId)
+      
+      console.log("Plan ID:", planId);
       let durationInMinutes;
-  
+    
       switch (selectedDuration) {
         case '10m':
           durationInMinutes = 10;
@@ -297,12 +306,12 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
         default:
           durationInMinutes = 0;
       }
-  
+    
       formData.append('duration_minutes', durationInMinutes.toString());
       formData.append('description', descriptions);
-  
+    
       console.log('FormData contents:', formData);
-  
+    
       const response = await fetch('http://52.70.194.52/api/attendance/sub-tasks/', {
         method: 'POST',
         headers: {
@@ -310,13 +319,21 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
         },
         body: formData,
       });
-  
+    
       const jsonResponse = await response.json();
-  
+    
       if (response.ok) {
         console.log('Sub-task created successfully:', jsonResponse);
         await fetchSubTasks(); // ✅ Re-fetch updated list
-        setStep(2)
+          
+        // Clear form data after creating subtask
+        setSubPlan('');
+        setSelectedDay(null);
+        setSelectedDuration('10m');
+        setDescriptions('');
+          
+        // Optionally reset to a previous step or move forward to the next step
+        setStep(2);
       } else {
         console.error('Failed to create sub-task:', jsonResponse);
       }
@@ -326,6 +343,14 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
   };
   
   
+  const handleAddSubtask = (day) => {
+    setSelectedDay(day);
+  
+    setTimeout(() => {
+      setStep(3);
+     
+    }, 100); // 100ms ka chhota sa delay
+  };
   
   return (
     //   <View style={styles.container}>
@@ -400,7 +425,8 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           renderItem={({item}) => (
             <ButtonWithPushBack
               onPress={() => {
-                fetchSelectedPlanDetails(item.id); // Fetch plan details dynamically
+                fetchSelectedPlanDetails(item.id);
+                setSelectedPlanId(item.id); // Fetch plan details dynamically
                 setStep(2);
               }}>
               <Card third style={styles.card}>
@@ -518,10 +544,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
         </Text>
 
         <TouchableOpacity
-          onPress={() => {
-            setSelectedDay(day);
-            setStep(3);
-          }}
+         onPress={() => handleAddSubtask(day)}
           style={{
             backgroundColor: "black",
             borderRadius: 20,
