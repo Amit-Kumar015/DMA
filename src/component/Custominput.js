@@ -5,6 +5,7 @@ import {
     widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import Text from "./Text";
+import useTheme from "../hooks/useTheme";
 
 const Custominput = ({
     width = "84%",         // Default width
@@ -15,18 +16,21 @@ const Custominput = ({
     onValueChange,
     multiline = false,
     placeholder = "",
+     keyboardType = 'default',
 }) => {
     const inputRef = useRef(null);
+    const {theme}=useTheme()
 
     return (
         <View style={{ marginTop }}>
             {title ? (
-                <Text h4 semiBold style={styles.title}>{title}</Text>
+                <Text h4 semiBold  color={theme.$background}style={styles.title}>{title}</Text>
             ) : null}
             <TextInput
                 ref={inputRef}
                 value={value}
                 placeholder={placeholder}
+                 keyboardType={keyboardType} 
                 style={[
                     styles.colinput,
                     {
@@ -52,7 +56,7 @@ const styles = StyleSheet.create({
     title: {
         marginLeft: 5,
         marginBottom: 5,
-        color: "#000000",
+        // color: "#000000",
     },
     colinput: {
         width: wp("100%"),

@@ -67,20 +67,18 @@ const ProfileScreen = () => {
   console.log("posts",posts)
   const [currentPage, setCurrentPage] = useState(1)
     const [showLoading, setShowLoading] = useState(false);
-  const [deviceInfo, setDeviceInfo] = useState({
-    ip_address: 'Fetching...',
-    latitude: 'Fetching...',
-    longitude: 'Fetching...',
-    location: 'Fetching...',
-    device_type: 'Fetching...',
-    os: 'Fetching...',
-    browser: 'Fetching...',
-    user_agent: 'Fetching...',
-    device_name: 'Fetching...',
-  });
+  const [deviceInfo, setDeviceInfo] = useState({});
 
 
-
+useFocusEffect(
+  useCallback(() => {
+    // screen is focused
+    return () => {
+      // screen is unfocused (navigating away)
+      setSelected('');
+    };
+  }, [])
+);
   
 
   useEffect(() => {
@@ -112,53 +110,78 @@ const ProfileScreen = () => {
   }, [profileData]);
 
 
-  useEffect(() => {
+   useEffect(() => {
     const fetchDeviceDetails = async () => {
       try {
-        // const deviceName = await DeviceInfo.getDeviceName();
         const deviceType = DeviceInfo.getDeviceType();
         const osName = DeviceInfo.getSystemName();
         const osVersion = DeviceInfo.getSystemVersion();
         const userAgent = await DeviceInfo.getUserAgent();
-        // const browser = Platform.OS === 'android' ? 'Chrome' : 'Safari';
 
         let latitude = 'Unavailable';
         let longitude = 'Unavailable';
         let address = 'Unknown Location';
 
+        // ✅ Request location permissions (Android only)
         if (Platform.OS === 'android') {
-          const granted = await PermissionsAndroid.request(
+          const granted = await PermissionsAndroid.requestMultiple([
             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+          ]);
+
+          const fineGranted = granted['android.permission.ACCESS_FINE_LOCATION'];
+          const coarseGranted = granted['android.permission.ACCESS_COARSE_LOCATION'];
+
+          if (
+            fineGranted !== PermissionsAndroid.RESULTS.GRANTED &&
+            coarseGranted !== PermissionsAndroid.RESULTS.GRANTED
+          ) {
             console.warn('Location permission denied');
           }
         }
 
+        // ✅ Get current location
         await new Promise(resolve => {
           Geolocation.getCurrentPosition(
             async position => {
               latitude = position.coords.latitude.toFixed(6);
               longitude = position.coords.longitude.toFixed(6);
 
+              try {
               const locationResponse = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-              );
-              const locationData = await locationResponse.json();
-              address = locationData?.display_name || 'Unknown Location';
+  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+  {
+    headers: {
+      'User-Agent': 'MyApp/1.0.0 (myemail@example.com)', // 👈 Replace with your app/email
+    },
+  }
+);
+
+if (locationResponse.ok) {
+  const locationData = await locationResponse.json();
+  address = locationData?.display_name || 'Unknown Location';
+} else {
+  const errorText = await locationResponse.text();
+  console.error('Reverse geocoding failed:', errorText);
+}
+
+              } catch (err) {
+                console.error('Error resolving address:', err);
+              }
 
               resolve();
             },
             error => {
               console.error('Error getting location:', error);
-              resolve(); // still resolve to proceed
+              resolve(); // Still proceed even on failure
             },
-            {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
           );
         });
 
-        const response = await fetch('https://api64.ipify.org?format=json');
-        const ipData = await response.json();
+        // ✅ Get IP address
+        const ipRes = await fetch('https://api64.ipify.org?format=json');
+        const ipData = await ipRes.json();
 
         const finalDeviceInfo = {
           ip_address: ipData.ip,
@@ -167,13 +190,13 @@ const ProfileScreen = () => {
           location: address,
           device_type: deviceType,
           os: `${osName} ${osVersion}`,
-          // browser,
           user_agent: userAgent,
         };
 
-        setDeviceInfo(prevState => ({...prevState, ...finalDeviceInfo}));
+        setDeviceInfo(prev => ({ ...prev, ...finalDeviceInfo }));
+
         const accessToken = await AuthStorage.getAccessToken();
-        // 🔥 Make the API request using FormData
+
         const formData = new FormData();
         formData.append('ip_address', finalDeviceInfo.ip_address);
         formData.append('latitude', finalDeviceInfo.latitude);
@@ -181,43 +204,45 @@ const ProfileScreen = () => {
         formData.append('location', finalDeviceInfo.location);
         formData.append('device_type', finalDeviceInfo.device_type);
         formData.append('os', finalDeviceInfo.os);
-        // formData.append('browser', finalDeviceInfo.browser);
         formData.append('user_agent', finalDeviceInfo.user_agent);
 
         const apiResponse = await fetch(
           `http://52.70.194.52/api/core/user-activities/${userId}/`,
-          
           {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${accessToken}`,
-              // 'Content-Type': 'application/json',
             },
             body: formData,
-          },
+          }
         );
+
         if (apiResponse.ok) {
           console.log('Device info submitted successfully.');
         } else {
-          console.error(
-            'Failed to submit device info:',
-            await apiResponse.text(),
-          );
+          console.error('Failed to submit device info:', await apiResponse.text());
         }
       } catch (error) {
         console.error('Error fetching device details:', error);
       }
     };
 
-    fetchDeviceDetails();
-  }, [])
-
-  useEffect(() => {
-    if (userData?.user?.id) {
-      setUserId(userData.user.id);
-      setStoredProfile(null); // ✅ clear previous user's profile pic
+    if (userId) {
+      fetchDeviceDetails();
     }
-  }, [userData]);
+  }, [userId]);
+
+
+
+// Separate effect to set userId from userData
+useEffect(() => {
+  if (userData?.user?.id) {
+    setUserId(userData.user.id);
+    setStoredProfile(null); // Clear previous profile
+  }
+}, [userData]);
+
+
   
   useFocusEffect(
     React.useCallback(() => {
@@ -274,52 +299,7 @@ const ProfileScreen = () => {
    
  // <-- Run only when userId is availabl
   console.log('deviceinfo', deviceInfo);
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       // ✅ Save userType
-  //       if (userData?.user?.user_type) {
-  //         setUserType(userData.user.user_type);
-  //         await AsyncStorage.setItem('userType', userData.user.user_type);
-  //       } else {
-  //         const storedUserType = await AsyncStorage.getItem('userType');
-  //         if (storedUserType) {
-  //           setUserType(storedUserType);
-  //         }
-  //       }
-  
-  //       // ✅ Save userName from userData or personalProfile
-  //       if (userData?.user?.username) {
-  //         setUserName(userData?.user?.username);
-  //         await AsyncStorage.setItem('userName', userData?.user?.username);
-  //       } else if (personalProfile?.user?.username) {
-  //         setUserName(personalProfile?.user?.username);
-  //         await AsyncStorage.setItem('userName', personalProfile?.user?.username);
-  //       } else {
-  //         const storedUserName = await AsyncStorage.getItem('userName');
-  //         if (storedUserName) {
-  //           setUserName(storedUserName);
-  //         }
-  //       }
-  
-  //       // ✅ Save userId from personalProfile.data.id
-  //       if (userData?.user?.id) {
-  //         setUserId(userData.user.id);
-  //         await AsyncStorage.setItem('userId', userData.user.id);
-  //       } else {
-  //         const storedUserType = await AsyncStorage.getItem('userId');
-  //         if (storedUserType) {
-  //           setUserId(storedUserType);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching user data:', error);
-  //     }
-  //   };
-  
-  //   fetchUserData();
-  // }, [userData]);
-  
+ 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -445,22 +425,26 @@ const ProfileScreen = () => {
     };
     
   return (
-    <SafeAreaView style={style.Container}>
+    <SafeAreaView
+          style={[
+            style.Container,
+            {backgroundColor: theme.$background}, // ✅ dynamic background color
+          ]}>
     {/* Header */}
-    <View style={{paddingHorizontal:16}}>
+    <View style={{paddingHorizontal:16,padding:hp("1%")}}>
     <Header
   showBack={true}
   title={userName || storedProfile?.username || storedProfile?.first_name || 'User'} 
       rightComponent={
         <View style={{ flexDirection: 'row', gap: 15, }}>
           <TouchableOpacity onPress={() => navigation.navigate('uploadreels')}>
-            <AntDesign name="plussquareo" size={23} color={'black'} />
+            <AntDesign name="plussquareo" size={23} color={theme.$lightText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => alert('Bell Icon Clicked!')}>
-            <Icon name="bell" size={23} color={'black'} />
+            <Icon name="bell" size={23} color={theme.$lightText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
-            <Icon name="menu" size={23} color={'black'} />
+            <Icon name="menu" size={23} color={theme.$lightText} />
           </TouchableOpacity>
         </View>
       }
@@ -508,7 +492,7 @@ const ProfileScreen = () => {
 </View>
   <View style={{ paddingHorizontal:20}}>
 
-  <Text h5 >{userName} </Text>
+  {/* <Text h5 >{userName} </Text> */}
   {storedProfile && (
   <Text h5  bold>{storedProfile.first_name} {storedProfile.last_name}</Text>
 )}
@@ -516,41 +500,42 @@ const ProfileScreen = () => {
 <View style={{ flexDirection: 'row', gap: 10, justifyContent:"center",top:10 }}>
 <ButtonWithPushBack customContainerStyle={{ width: 120 }}>
   <PrimaryButton
-    size="small" // correct way to trigger smaller font/button
+    size="small"
     title="Edit Profile"
     onPress={() => {
       setSelected('edit');
       navigation.navigate('EditScreen');
     }}
-    customsBg={selected === 'edit' ? '#000' : 'transparent'} // Black if selected, else transparent
+    customsBg={selected === 'edit' ? theme.$primary : 'transparent'}
     titleStyle={{
-      color: selected === 'edit' ? '#fff' : '#000', // White if selected, else black
+      color: selected === 'edit' ? theme.$onPrimary : theme.$lightText, // text color based on selection
     }}
     buttonStyle={{
       borderWidth: 1,
-      borderColor: '#000',
+      borderColor: theme.$lightText, // dynamic border
     }}
   />
 </ButtonWithPushBack>
 
 <ButtonWithPushBack customContainerStyle={{ width: 120 }}>
   <PrimaryButton
-     size="small" 
+    size="small"
     title="Share Profile"
     onPress={() => {
-      setSelected('share'); // 👈 this was missing
+      setSelected('share');
       onShare();
     }}
-    customsBg={selected === 'share' ? '#000' : 'transparent'}
+    customsBg={selected === 'share' ? theme.$primary : 'transparent'}
     titleStyle={{
-      color: selected === 'share' ? '#fff' : '#000',
+      color: selected === 'share' ? theme.$onPrimary : theme.$lightText,
     }}
     buttonStyle={{
       borderWidth: 1,
-      borderColor: '#000',
+      borderColor: theme.$lightText,
     }}
   />
 </ButtonWithPushBack>
+
 
     </View>
     <View style={{ flex: 1, marginTop: 20 }}>
@@ -582,7 +567,7 @@ const ProfileScreen = () => {
 <View style={{}}>
       <ButtonWithPushBack customContainerStyle={style.buttonContainer}>
         <PrimaryButton
-          icon={<Icon name="plus" type="feather" size={25} color="white" />}
+          icon={<Icon name="plus" type="feather" size={25} color={theme.$background} />}
           onPress={() => navigation.navigate('uploadreels')}
           buttonStyle={style.buttonStyle}
         />
@@ -599,7 +584,7 @@ const style = StyleSheet.create({
     // width: wp('100%'),
     // height: hp('100%')
     flex:1,
-    backgroundColor:"#FFFFFF",
+    
   
   },
   editProfileButton: {

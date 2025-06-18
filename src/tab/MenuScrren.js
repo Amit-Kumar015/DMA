@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Switch, Image, Alert, TouchableOpacity } from 'react-native'
+import { StyleSheet,  View, Switch, Image, Alert, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import AuthStorage from '../utils/authStorage'
@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { showMessage } from '../utils/messages/message';
 import { setProfile } from '../slices/profileSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Text from '../component/Text';
 
 
 
@@ -36,7 +37,7 @@ const MenuOptionScreen = () => {
             source={require('../assets/icon/settings.jpg')} 
             style={{ width: 24, height: 24, marginRight: 10 }}
           />
-          <Text >Settings</Text>
+          <Text bold customColor="black" >Settings</Text>
         </View>
       </TouchableOpacity>
       <View style={[styles.ColRow, { 
@@ -50,7 +51,7 @@ const MenuOptionScreen = () => {
             source={require('../assets/icon/darkMode.png')} 
             style={{ width: 24, height: 24, marginRight: 10 }}
           />
-          <Text>Dark Mode</Text>
+          <Text h5 bold customColor="black">Dark Mode</Text>
         </View>
         <Switch
           value={theme.mode === 'dark'}
@@ -85,7 +86,7 @@ const MenuOptionScreen = () => {
             dispatch(setBusinessProfile(null));
             showMessage({
               message: 'You have been logged out.',
-              type: 'info',
+              type: 'success',
               theme: theme,
               duration: 3000,
             });
@@ -114,7 +115,7 @@ const MenuOptionScreen = () => {
       source={require('../assets/icon/logout.png')}
       style={{ width: 24, height: 24, marginRight: 10 }}
     />
-    <Text>Log out</Text>
+  <Text h5 bold customColor="black">Log out</Text>
   </View>
 </TouchableOpacity>
 

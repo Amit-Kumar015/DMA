@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {
@@ -23,6 +24,8 @@ import {showMessage} from '../utils/messages/message';
 import useTheme from '../hooks/useTheme';
 import Text from '../component/Text';
 import Card from '../component/card';
+import Checkbox from '../component/checkbox';
+import TextInputEml from '../component/textInput';
 
 const daysOfWeek = [
   'Sunday',
@@ -49,13 +52,15 @@ const [selectedDuration, setSelectedDuration] = useState(null); // Selected Dura
 const [subTasks, setSubTasks] = useState({});
 const [selectedPlanId, setSelectedPlanId] = useState(null);
 const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
-  const toggleDaySelection = day => {
-    if (selectedDays.includes(day)) {
-      setSelectedDays(selectedDays.filter(d => d !== day));
+const toggleDaySelection = (day) => {
+  setSelectedDays((prevSelected) => {
+    if (prevSelected.includes(day)) {
+      return prevSelected.filter(d => d !== day);
     } else {
-      setSelectedDays([...selectedDays, day]);
+      return [...prevSelected, day];
     }
-  };
+  });
+};
 
   useEffect(() => {
     fetchWeeklyPlans();
@@ -389,7 +394,12 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
     //       />
     //     </View>
     //   )}
-    <View style={styles.container}>
+     <SafeAreaView
+                      style={[
+                        styles.container,
+                        { backgroundColor: theme.$background }, // ✅ dynamic background color
+                      ]}
+                    >
       {step === 0 && <Header showBack={true} title="Weekly Plan" />}
       {/* {step === 0 && (
       <FlatList
@@ -419,6 +429,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
         )}
    */}
       {step === 0 && (
+        <View style={{paddingHorizontal:16,flex:1}}>
         <FlatList
           data={weeklyPlans}
           keyExtractor={item => item.id.toString()}
@@ -429,12 +440,12 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
                 setSelectedPlanId(item.id); // Fetch plan details dynamically
                 setStep(2);
               }}>
-              <Card third style={styles.card}>
-                <Text h4 bold>
+              <Card third >
+                <Text h4 bold customColor="black">
                   {item.name}
                 </Text>
-                <Text h5>{item.description}</Text>
-                <Text h5 semiBold>
+                <Text h5 customColor="black">{item.description}</Text>
+                <Text h5 semiBold customColor="black">
                   {Object.keys(item)
                     .filter(key => item[key] === true)
                     .join(', ')}
@@ -443,12 +454,13 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
             </ButtonWithPushBack>
           )}
         />
+        </View>
       )}
          {step === 0 && (
           <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
             <PrimaryButton
               title="Add"
-              icon={<Icon name="plus" type="feather" size={15} color="white" />}
+              icon={<Icon name="plus" type="feather" size={15} color={theme.$background} />}
               onPress={() => setStep(1)}
             />
           </ButtonWithPushBack>
@@ -467,25 +479,42 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
             style={{flex: 1}}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               <View style={styles.inputContainer}>
-                <Custominput
+                {/* <Custominput
                   title="Weekly Plan Name"
                   value={planName}
                   onValueChange={setPlanName}
-                />
+                /> */}
+                    <TextInputEml
+                // ref={inputRef}
+                label="Weekly Plan Name"
+                placeholder="Weekly Plan Namee"
+                value={planName}
+                onChangeText={setPlanName}
+               
+              />
               </View>
               <View style={styles.inputContainer}>
-                <Custominput
+                {/* <Custominput
                   height="13%"
                   title="Description"
                   value={description}
                   onValueChange={setDescription}
                   multiline={true}
                   textAlignVertical="top"
-                />
+                /> */}
+                   <TextInputEml
+                // ref={inputRef}
+                label="Description"
+                placeholder="Description"
+                value={description}
+                onChangeText={setDescription}
+                height={90}
+               
+              />
               </View>
 
               {/* Horizontal Scrollable Days Selection */}
-              <Text style={styles.label}>Select Days</Text>
+              {/* <Text h5 bold style={styles.label}>Select Days</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {daysOfWeek.map((day, index) => (
                   <TouchableOpacity
@@ -504,7 +533,31 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
                     </Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </ScrollView> */}
+
+<Text h5 bold style={styles.label}>Select Days</Text>
+
+{daysOfWeek.map((day, index) => (
+  <View
+    key={index}
+    style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+          paddingHorizontal:16
+    }}
+  >
+    <Text h6>{day}</Text>
+    <Checkbox
+      checked={selectedDays.includes(day)}
+      onPress={() => toggleDaySelection(day)}
+    />
+  </View>
+))}
+
+
+
             </ScrollView>
           </KeyboardAvoidingView>
 
@@ -567,11 +620,11 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           <Card third>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View style={{ flex: 1 }}>
-              <Text h4 bold>{item.task_name}</Text>
-              <Text h5 semiBold>{item.description}</Text>
+              <Text h4 bold customColor="black">{item.task_name}</Text>
+              <Text h5 semiBold customColor="black">{item.description}</Text>
             </View>
   
-            <Text h5 semiBold style={{ marginLeft: 10 }}>{item.duration_minutes} min</Text>
+            <Text h5 semiBold customColor="black" style={{ marginLeft: 10 }}>{item.duration_minutes} min</Text>
           </View>
         </Card>
         )}
@@ -601,28 +654,45 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
       {/* Days Label */}
       <Text h4 sty bold>Days</Text>
       <View style={styles.disabledInput}>
-        <Text h5 bold>{selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</Text>
+        <Text h5 bold customColor="black">{selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</Text>
       </View>
 
       {/* Task Name Input */}
       <View style={styles.inputContainer}>
-        <Custominput
+        {/* <Custominput
           title="Name of Sub Task"
           value={subPlan}
           onValueChange={setSubPlan}
-        />
+        /> */}
+            <TextInputEml
+                // ref={inputRef}
+                label="Name of Sub Task"
+                placeholder="Name of Sub Task"
+                value={subPlan}
+                onChangeText={setSubPlan}
+               
+              />
       </View>
 
       {/* Description Input */}
       <View style={styles.inputContainer}>
-        <Custominput
+        {/* <Custominput
           height="13%"
           title="Description"
           value={descriptions}
           onValueChange={setDescriptions}
           multiline={true}
           textAlignVertical="top"
-        />
+        /> */}
+            <TextInputEml
+                // ref={inputRef}
+                label="Description"
+                placeholder="Description"
+                value={descriptions}
+                onChangeText={setDescriptions}
+                height={90}
+               
+              />
       </View>
 
       {/* How Long Text */}
@@ -652,7 +722,7 @@ const durations = ['10m', '15m', '30m', '45m', '1h', '1h 15m'];
           </ButtonWithPushBack>
   </Slide>
 )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -662,8 +732,10 @@ const styles = StyleSheet.create({
   container: {
     width: wp('100%'),
     height: hp('100%'),
-    backgroundColor: '#ffffff',
-    padding: hp('2%'),
+    // backgroundColor: '#ffffff',
+    // padding: hp('2%'),
+    paddingHorizontal:16
+
   },
   buttonContainer: {
     position: 'absolute',
@@ -671,20 +743,22 @@ const styles = StyleSheet.create({
     right: wp('7%'),
   },
   buttonContainers: {
-    marginVertical: 80,
+    marginVertical: 50,
     width: '50%',
     alignSelf: 'center',
+    justifyContent:"flex-end",
+    // flex:1
   },
   inputContainer: {
-    marginTop: hp('3%'),
+    marginTop: hp('2%'),
+        // paddingHorizontal:16
   },
   scrollContainer: {
     flexGrow: 1,
     paddingBottom: hp('5%'),
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
+      paddingHorizontal:16,
     marginTop: 20,
     marginBottom: 10,
   },
@@ -703,11 +777,6 @@ const styles = StyleSheet.create({
   },
   selectedDay: {
     backgroundColor: 'black',
-  },
-  dayText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'black',
   },
   selectedDayText: {
     color: 'white',

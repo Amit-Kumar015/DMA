@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "939134104012",
-    "project_id": "dmafabapp",
-    "storage_bucket": "dmafabapp.firebasestorage.app"
+    "project_number": "350737523981",
+    "project_id": "dma-notification-bd580",
+    "storage_bucket": "dma-notification-bd580.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:939134104012:android:be1f746607060c354fad69",
+        "mobilesdk_app_id": "1:350737523981:android:aa4240478bd13d0109fc44",
         "android_client_info": {
           "package_name": "com.dma"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBUSAH_mHlhRnoL5uA1-7AauzU6jSYbitM"
+          "current_key": "AIzaSyDZhoxRL_Zk74Jp7zI4EMjO1WVylm-b6N8"
         }
       ],
       "services": {

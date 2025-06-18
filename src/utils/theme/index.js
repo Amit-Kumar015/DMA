@@ -13,7 +13,7 @@ export const themes = {
     $iconColor: '#E5E5E5',
     $borderColor: '#E5E5E5',
     // $rippleColor: 'rgba(255, 255, 255, .2)',
-    $lightText: '#FFFFFF',
+    $lightText: 'white',
     // $lightBgGray:'#F3F4F6',
     // $statusBarBgColor: '#202020',
     // $secondaryCard: '#2B2545',
@@ -33,17 +33,17 @@ export const themes = {
     $thiredBG:'#f4f5ff',
     $darkGreen:'#092B2D'
   },
+  
   light: {
     $mode: 'light',
     // $primary: '#2B3B6F',
     // $accent: '#17A948',
-    // $background: '#fff',
+    $background: '#ffffff',
     // $headerBackground: '#ffffff',
     $surface: '#F2F3F4',
     $disabled: '#A1A7B6',
     $danger: '#C12126',
     $danger2: '#DE3B40',
-    // $lightText: 'rgba(23, 26, 31, 0.34)',
     $lightText: '#000000',
     $lightBgGray:'#F3F4F6',
     $text: '#E5E5E5',
@@ -69,6 +69,7 @@ export const themes = {
     $darkGreen:'#092B2D',
     
   },
+  
 };
 export const iconSize = 35;
 export const iconSizeSmall = 30;

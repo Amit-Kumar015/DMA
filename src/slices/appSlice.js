@@ -8,7 +8,11 @@ import { themes } from '../utils/theme';
  * @param {string} mode - 'light' | 'dark' | 'no-preference'
  * @returns {object} Theme
  */
+// const getSystemTheme = (mode) => {
+//   return themes.light;
+// };
 const getSystemTheme = (mode) => {
+  if (mode === 'dark') return themes.dark;
   return themes.light;
 };
 

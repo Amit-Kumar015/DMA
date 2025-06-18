@@ -12,7 +12,7 @@ export const RootNavigator = () => {
   const userData = useSelector(state => state.user.userData);
   const userToken = userData?.authtoken; 
   const userType = userData?.user?.user_type; // ✅ Extract userType
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,12 +20,12 @@ export const RootNavigator = () => {
       if (accessToken) {
         dispatch(setUserData({ authtoken: accessToken }));
       }
-      setIsLoading(false);
+      // setIsLoading(false);
     };
     fetchData();
   }, [dispatch]);
 
-  if (isLoading) return null;
+  // if (isLoading) return null;
 
   // return userToken ? <AuthStack  /> : < <Appstack /> />;
   return (

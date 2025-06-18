@@ -25,189 +25,168 @@
 // };
 
 // export default App;
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  PermissionsAndroid,
   Platform,
-  StatusBar,
+  PermissionsAndroid,
 } from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {Provider} from 'react-redux';
+import { NavigationContainer } from '@react-navigation/native';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AuthStorage from './src/utils/authStorage';
 import store, { persistor } from './src/redux/store/store';
 import { RootNavigator } from './src/navigation/rootNavigator';
 import { AuthContext } from './src/utils/contextSlice/Context';
-import FlashMessage from 'react-native-flash-message';
 import SettingsProvider from './src/utils/settingProvider';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AuthStack from './src/navigation/AuthStack/authStack';
-import { Appstack } from './src/navigation';
-import { PersistGate } from 'redux-persist/integration/react';
 import NoInternetConnection from './src/component/NoInternet';
+import { themes } from './src/utils/theme';
+import messaging from '@react-native-firebase/messaging';
+import notifee,{AndroidColor, AndroidImportance} from '@notifee/react-native';
+import firebase,{ createNotificationChannel, requestUserPermission } from './src/utils/FireBaseService';
+import FlashMessage from 'react-native-flash-message';
 export const navigationRef = React.createRef();
 
- 
 const App = () => {
-  const initialLoginState  = {
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const theme = isDarkTheme ? themes.dark : themes.light;
+ const [visible, setVisible] = useState(false);
+  const themeContext = useMemo(() => ({
+    toggleTheme: () => {
+      setIsDarkTheme((prevTheme) => !prevTheme);
+    },
+  }), []);
+
+  // useEffect(() => {
+  //   if (Platform.OS === 'android') {
+  //     PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+  //     ).catch(err => console.log(err));
+  //   }
+  // }, []);
+
+  const authContext = useMemo(() => ({
+    signIn: async (foundUser) => {
+      try {
+        await AuthStorage.saveTokens(foundUser?.access, foundUser?.refresh);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    signOut: async () => {
+      try {
+        await AuthStorage.removeTokens();
+      } catch (e) {
+        console.log(e);
+      }
+    },
+  }), []);
+const initialLoginState = {
     isLoading: true,
     userName: null,
     userToken: null,
   };
+
  
-  const [visible, setVisible] = useState(false);
+
+
  
-  // const netInfo = useNetInfo();
- 
-  useEffect(() => {
-    setVisible(true);
-    // askForPermission();
-    // console.log(netInfo?.isConnected, '===============netInfo?.isConnected');
-  //   setTimeout(() => {
-  //     if (netInfo?.isConnected) {
-  //       setVisible(false);
-  //     }
-  //   }, 1000);
-  // }, [netInfo?.isConnected]);
-},[])
- 
-  // const askForPermission = async () => {
-  //   if (Platform.OS === 'android') {
-  //     try {
-  //       await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-  //       );
-  //       console.log('=====askForPermission called');
-  //     } catch (error) {
-  //       console.log(error, '==func error');
-  //     }
-  //   }
-  // };
- 
-  // const loginReducer = (prevState: any, action: any) => {
-  //   switch (action.type) {
-  //     case 'RETRIEVE_TOKEN':
-  //       return {
-  //         ...prevState,
-  //         userToken: action.token,
-  //         isLoading: false,
-  //       };
-  //     case 'LOGIN':
-  //       return {
-  //         ...prevState,
-  //         userName: action.id,
-  //         userToken: action.token,
-  //         isLoading: false,
-  //       };
-  //     case 'LOGOUT':
-  //       return {
-  //         ...prevState,
-  //         userName: null,
-  //         userToken: null,
-  //         isLoading: false,
-  //       };
-  //     case 'REGISTER':
-  //       return {
-  //         ...prevState,
-  //         userName: action.id,
-  //         userToken: action.token,
-  //         isLoading: false,
-  //       };
-  //   }
-  // };
- 
-  const authContext = React.useMemo(
-    () => ({
-      signIn: async (foundUser, authtoken) => {
-        // const userToken = String(authtoken);
-        const userData = JSON.stringify(foundUser);
-        // console.log(userData[0].parentid)
- 
-        // console.log(userData, userToken, 'authtoken');
-        try {
-          // await AsyncStorage.setItem('newUser', String(false));
-          // await AsyncStorage.saveTokens('userToken', userToken);
-          await AuthStorage.saveTokens(foundUser?.access, foundUser?.refresh);
-          // await Storage.storeObject('@user', userData);
-        } catch (e) {
-          //console.log(e);
-        }
-        // dispatch({
-        //   type: 'LOGIN',
-        //   id: 'userName',
-        //   // token: userToken
-        // });
-      },
-      signOut: async () => {
-        // setUserToken(null);
-        // setIsLoading(false);
-        try {
-          // await Storage.removeValue('@user');
-          // await Storage.removeValue('@baseUrl');
-          await AuthStorage.removeTokens()
-        } catch (e) {
-          console.log(e);
-        }
-        // dispatch({ type: 'LOGOUT' });
-      },
-    }),
-    [],
-  );
- 
-  // if (loginState.isLoading) {
-  //   return (
-  //     <ImageBackground
-  //       style={{
-  //         width: device_width,
-  //         height: device_height,
-  //         flex: 1,
-  //         alignSelf: 'center',
-  //       }}
-  //       resizeMode="cover"
-  //       source={require('./assets/0.png')}>
-  //       <View
-  //         style={{
-  //           flex: 1,
-  //           justifyContent: 'center',
-  //           alignItems: 'center',
-  //           backgroundColor: '#fff',
-  //         }}>
-  //         <ActivityIndicator size={'large'} color={'#f1a722'} />
-  //       </View>
-  //     </ImageBackground>
-  //   );
-  // }
- 
-  // const store = ConfigureStore();
- 
+
+//   useEffect(() => {
+//       // createNotificationChannel();
+//     requestUserPermission();  
+  
+//     const unsubscribe = messaging().onMessage(async remoteMessage => {
+//       console.log('Foreground message:', remoteMessage);
+  
+//       await notifee.displayNotification({
+//         title: remoteMessage.notification?.title || 'Notification',
+//         body: remoteMessage.notification?.body || 'You got a message',
+//         android: {
+//           channelId: 'default',
+//           // smallIcon: 'ic_launcher',
+//             smallIcon: 'ic_notification', 
+            
+//         },
+//       });
+//     });
+
+//     return unsubscribe;
+//  }, []);
+useEffect(() => {
+  const init = async () => {
+    await requestUserPermission();
+ await notifee.requestPermission();
+    await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+      importance: AndroidImportance.HIGH,
+    });
+
+    messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage);
+
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title || 'Notification',
+        body: remoteMessage.notification?.body || 'You got a message',
+        android: {
+          channelId: 'default',
+         smallIcon: 'ic_notification'// 👈 fallback icon
+        },
+      });
+    });
+  };
+
+  init();
+}, []);
+
+// useEffect(() => {
+//     const setupFCM = async () => {
+//       await createNotificationChannel();
+//       await requestUserPermission();
+//  console.log(requestUserPermission, 'requestUserPermission');
+//       const unsubscribe = messaging().onMessage(async remoteMessage => {
+       
+
+//         const title =
+//           remoteMessage.notification?.title || remoteMessage.data?.title || 'Notification';
+//         const body =
+//           remoteMessage.notification?.body || remoteMessage.data?.body || 'You got a message';
+
+//         await notifee.displayNotification({
+//           title,
+//           body,
+//           android: {
+//             channelId: 'default',
+//             smallIcon: 'ic_notification', // ensure this icon exists in res/drawable
+//           },
+//         });
+//       });
+
+//       return unsubscribe;
+//     };
+
+//     setupFCM();
+//   }, []);
   return (
+    //{...authcontext, ...themeContext, theme}
     <AuthContext.Provider value={authContext}>
-      {/* {visible ? (
-        // <NetInfo />
-      ) : ( */}
-          <GestureHandlerRootView style={{ flex: 1 }}>
-          <Provider store={store}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-
-          <NavigationContainer>
-            {/* <StatusBar
-              barStyle={'light-content'}
-              backgroundColor={primaryColor}
-            /> */}
-               <SettingsProvider>
-               <NoInternetConnection>
-            <RootNavigator />
-            </NoInternetConnection>
-
-            {/* <Appstack/> */}
-            <FlashMessage position="top" />
-            </SettingsProvider>
-          </NavigationContainer>
+            <NavigationContainer ref={navigationRef}>
+              <SettingsProvider>
+                <NoInternetConnection>
+                  <RootNavigator />
+                </NoInternetConnection>
+                <FlashMessage position="top" />
+              </SettingsProvider>
+            </NavigationContainer>
           </PersistGate>
         </Provider>
-        </GestureHandlerRootView>
-      {/* )} */}
+      </GestureHandlerRootView>
     </AuthContext.Provider>
   );
 };
- 
+
 export default App;
