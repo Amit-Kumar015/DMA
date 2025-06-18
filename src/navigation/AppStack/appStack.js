@@ -24,6 +24,23 @@ import PostDetailScreen from "../../tab/AllPostScreen";
 import TournamentScreen from "../../tab/TournamentScreen";
 import PerformanceUpdate from "../../tab/performanceUpdate";
 import TestScreen from "../../tab/TestScreen";
+import BoostAccademy from "../../tab/BoostAccademy";
+import BmiScreen from "../../tab/BmiScreen";
+import DietPlan from "../../tab/DietPlan";
+import PersonalDataScreen from "../../tab/PersonalDataScreen";
+import BoostGym from "../../tab/BoostGym";
+import GymMemberShipScree from "../../tab/GymMemberShipScree";
+import AninitiesScreen from "../../tab/AninitiesScreen";
+import GymAnnounceMentScreen from "../../tab/GymAnnounceMentScreen";
+import NewAttendenceScreen from "../../tab/NewAttendenceScreen";
+import VerifyScreen from "../../tab/VerifyScreen";
+import sellProductScreen from "../../tab/sellProductScreen";
+import NoticationScreen from "../../tab/NoticationScreen";
+import MainShop from "../../tab/E-Commerce/MainShop";
+import AllCategories from "../../tab/E-Commerce/AllCategories";
+import ProductScreen from "../../tab/E-Commerce/ProductScreen";
+import CartScreen from "../../tab/E-Commerce/cartScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -44,7 +61,7 @@ const Appstack = ({ userType }) => {
         headerTitleStyle: {
           fontWeight: '400',
           marginLeft: -20,
-          fontFamily: 'Yaldevi-Regular',
+        
         },
       }
     )}
@@ -89,6 +106,22 @@ const Appstack = ({ userType }) => {
       <Stack.Screen name="Tournament" component={TournamentScreen} />
       <Stack.Screen name="Performance" component={PerformanceUpdate} />
       <Stack.Screen name="TestScreen" component={TestScreen} />
+      <Stack.Screen name="BoostAccademy" component={BoostAccademy} />
+        <Stack.Screen name="BmiScreen" component={BmiScreen} />
+          <Stack.Screen name="DietPlan" component={DietPlan} />
+            <Stack.Screen name="PersonalData" component={PersonalDataScreen} />
+              <Stack.Screen name="BoostGym" component={BoostGym} />
+                <Stack.Screen name="GymMemberShip" component={GymMemberShipScree} />
+                 <Stack.Screen name="Anenities" component={AninitiesScreen} />
+                  <Stack.Screen name="Announcement" component={GymAnnounceMentScreen} />
+                   <Stack.Screen name="NewAttendenceScreen" component={NewAttendenceScreen} />
+                    <Stack.Screen name="VerifyScreen" component={VerifyScreen} />
+                      <Stack.Screen name="sellProductScreen" component={sellProductScreen} />
+                       <Stack.Screen name="NotificationScreen" component={NoticationScreen} />
+                        <Stack.Screen name="MainShop" component={MainShop} />
+                        <Stack.Screen name="AllCategories" component={AllCategories} />
+                          <Stack.Screen name="ProductScreen" component={ProductScreen} />
+                            <Stack.Screen name="Cart" component={CartScreen} />
     </Stack.Navigator>
   );
 };

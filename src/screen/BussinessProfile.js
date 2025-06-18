@@ -76,6 +76,8 @@ export default function BussinessProfile() {
   const [location, setLocation] = useState();
   const [bio, setBio] = useState();
   const [logo, setLogo] = useState(null);
+  console.log("logo",logo)
+  const [imagePickerType, setImagePickerType] = useState('profile');
 
   const list = [
     {title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen()},
@@ -92,22 +94,22 @@ export default function BussinessProfile() {
     },
   ];
 
-  const handleImagePicker = () => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Take Photo', 'Choose from Gallery', 'Cancel'],
-          cancelButtonIndex: 2,
-        },
-        buttonIndex => {
-          if (buttonIndex === 0) handleCameraOpen();
-          else if (buttonIndex === 1) handleGalleryOpen();
-        },
-      );
-    } else {
-      setIsVisible(true);
-    }
-  };
+  // const handleImagePicker = () => {
+  //   if (Platform.OS === 'ios') {
+  //     ActionSheetIOS.showActionSheetWithOptions(
+  //       {
+  //         options: ['Take Photo', 'Choose from Gallery', 'Cancel'],
+  //         cancelButtonIndex: 2,
+  //       },
+  //       buttonIndex => {
+  //         if (buttonIndex === 0) handleCameraOpen();
+  //         else if (buttonIndex === 1) handleGalleryOpen();
+  //       },
+  //     );
+  //   } else {
+  //     setIsVisible(true);
+  //   }
+  // };
 
   // const handleCameraOpen = async () => {
   //   try {
@@ -119,51 +121,124 @@ export default function BussinessProfile() {
   //     console.log('Camera Error:', error);
   //   }
   // };
-  const handleCameraOpen = async () => {
-    try {
-      const image = await openCamera({cropping: true});
+  // const handleCameraOpen = async () => {
+  //   try {
+  //     const image = await openCamera({cropping: true});
 
-      if (image) {
-        const resizedImage = await ImageResizer.createResizedImage(
-          image.uri,
-          800, // Width
-          800, // Height
-          'JPEG', // Format
-          80, // Quality (0-100)
-        );
+  //     if (image) {
+  //       const resizedImage = await ImageResizer.createResizedImage(
+  //         image.uri,
+  //         800, // Width
+  //         800, // Height
+  //         'JPEG', // Format
+  //         80, // Quality (0-100)
+  //       );
 
+  //       setProfilePic(resizedImage.uri);
+  //       setLogo(resizedImage.uri);
+  //     }
+
+  //     setIsVisible(false);
+  //   } catch (error) {
+  //     console.log('Camera Error:', error);
+  //   }
+  // };
+
+  // const handleGalleryOpen = async () => {
+  //   try {
+  //     const image = await openPhotos({cropping: true});
+
+  //     if (image) {
+  //       const resizedImage = await ImageResizer.createResizedImage(
+  //         image.uri,
+  //         800, // Width
+  //         800, // Height
+  //         'JPEG', // Formaturi
+  //         80, // Quality (0-100)
+  //       );
+
+  //       setProfilePic(resizedImage.uri);
+  //       setLogo(resizedImage.uri);
+  //     }
+
+  //     setIsVisible(false);
+  //   } catch (error) {
+  //     console.log('Gallery Error:', error);
+  //   }
+  // };
+const handleImagePicker = (type) => {
+  if (Platform.OS === 'ios') {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: ['Take Photo', 'Choose from Gallery', 'Cancel'],
+        cancelButtonIndex: 2,
+      },
+      buttonIndex => {
+        if (buttonIndex === 0) handleCameraOpen(type);
+        else if (buttonIndex === 1) handleGalleryOpen(type);
+      }
+    );
+  } else {
+    setImagePickerType(type); // New state to track type
+    setIsVisible(true);
+  }
+};
+
+  const handleCameraOpen = async (type = 'profile') => {
+  try {
+    const image = await openCamera({cropping: true});
+    if (image) {
+      const resizedImage = await ImageResizer.createResizedImage(
+        image.uri,
+        800,
+        800,
+        'JPEG',
+        80
+      );
+
+      if (type === 'profile') {
         setProfilePic(resizedImage.uri);
+      } else if (type === 'logo') {
         setLogo(resizedImage.uri);
       }
-
-      setIsVisible(false);
-    } catch (error) {
-      console.log('Camera Error:', error);
     }
-  };
+    setIsVisible(false);
+  } catch (error) {
+    console.log('Camera Error:', error);
+  }
+};
 
-  const handleGalleryOpen = async () => {
-    try {
-      const image = await openPhotos({cropping: true});
+const handleGalleryOpen = async (type = 'profile') => {
+  try {
+    const image = await openPhotos({ cropping: true });
+    console.log('Image selected:', image);
 
-      if (image) {
-        const resizedImage = await ImageResizer.createResizedImage(
-          image.uri,
-          800, // Width
-          800, // Height
-          'JPEG', // Formaturi
-          80, // Quality (0-100)
-        );
+    if (image) {
+      const resizedImage = await ImageResizer.createResizedImage(
+        image.uri,
+        800,
+        800,
+        'JPEG',
+        80
+      );
+      console.log('Resized image URI:', resizedImage.uri);
 
+      if (type === 'profile') {
         setProfilePic(resizedImage.uri);
+      } else if (type === 'logo') {
         setLogo(resizedImage.uri);
       }
-
-      setIsVisible(false);
-    } catch (error) {
-      console.log('Gallery Error:', error);
+    } else {
+      console.log('No image selected');
     }
-  };
+
+    setIsVisible(false);
+  } catch (error) {
+    console.log('Gallery Error:', error);
+  }
+};
+
+
   useEffect(() => {
     const fetchBusinessTypes = async () => {
       try {
@@ -347,115 +422,193 @@ export default function BussinessProfile() {
       Alert.alert('Something went wrong! Please check your connection.');
     }
   };
-  const handleCreateProfiles = async () => {
-    const formData = new FormData();
+  
+  // const handleCreateProfiles = async () => {
+  //   const formData = new FormData();
 
-    // Log field values to verify
-    console.log({
-      userId,
-      ownerName,
-      bussinessName,
-      businessLocation,
-      mobileNumber,
-      websiteLink,
-      businessEmail,
-      selectedMainCategory,
-      selectedSubCategory,
-      selectedSubSubCategory,
-      logo,
+  //   // Log field values to verify
+  //   console.log({
+  //     userId,
+  //     ownerName,
+  //     bussinessName,
+  //     businessLocation,
+  //     mobileNumber,
+  //     websiteLink,
+  //     businessEmail,
+  //     selectedMainCategory,
+  //     selectedSubCategory,
+  //     selectedSubSubCategory,
+  //     logo,
+  //   });
+
+  //   formData.append('user', userId);
+  //   formData.append('business_owner', ownerName);
+  //   formData.append('business_name', bussinessName);
+  //   formData.append('business_address', businessLocation);
+  //   formData.append('business_phone', mobileNumber);
+  //   formData.append('business_website', websiteLink);
+  //   formData.append('business_email', businessEmail);
+
+  //   // Category IDs
+  //   formData.append('main_category', selectedMainCategory.key);
+  //   formData.append('sub_category', selectedSubCategory.key);
+  //   formData.append('sub_sub_category', selectedSubSubCategory.key);
+
+  //   // Business logo
+  //   if (logo) {
+  //     const fileName = `logo_${Date.now()}.jpg`;
+  //     formData.append('logo', {
+  //       uri: logo,
+  //       type: 'image/jpeg',
+  //       name: fileName,
+  //     });
+  //   }
+  //   // if (profilePic) {
+  //   //   const fileName = `profile_${Date.now()}.jpg`; // unique name
+  //   //   formData.append('profile_pic', {
+  //   //     uri: profilePic,
+  //   //     type: 'image/jpeg',
+  //   //     name: fileName,
+  //   //   });
+  //   // }
+  //   // Optional: Print form data
+  //   // for (let pair of formData.entries()) {
+  //   //   console.log(`${pair[0]}: ${pair[1]}`);
+  //   // }
+
+  //   try {
+  //     const accessToken = await AuthStorage.getAccessToken();
+  //     console.log('Access Token:', accessToken);
+
+  //     if (!accessToken) {
+  //       Alert.alert('Access token not found. Please login again.');
+  //       return;
+  //     }
+
+  //     const response = await fetch(
+  //       'http://52.70.194.52/api/core/business-info/',
+  //       {
+  //         method: 'POST',
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //           // DO NOT SET 'Content-Type' manually for FormData
+  //         },
+  //         body: formData,
+  //       },
+  //     );
+
+  //     console.log('Response Status:', response.status);
+
+  //     if (response.ok) {
+  //       const responseData = await response.json();
+  //       console.log('🚀 Response Data:', responseData);
+  //       dispatch(setBusinessProfile(responseData));
+  //       console.log('✅ Business profile set in Redux');
+  //       Alert.alert('Business Profile Created Successfully');
+  //       navigation.navigate('Appstack');
+  //     } else {
+  //       const errorData = await response.json();
+  //       console.log('❌ Error Response:', errorData);
+
+  //       const errorMessages = [];
+  //       for (const [key, value] of Object.entries(errorData)) {
+  //         if (Array.isArray(value)) {
+  //           errorMessages.push(...value);
+  //         } else {
+  //           errorMessages.push(value);
+  //         }
+  //       }
+
+  //       Alert.alert(
+  //         `Failed to create business profile: ${errorMessages.join(', ')}`,
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('⚠️ API Error:', error);
+  //     Alert.alert('Something went wrong! Please check your connection.');
+  //   }
+  // };
+  const handleCreateProfiles = async () => {
+  const formData = new FormData();
+
+  // Append basic business details
+  formData.append('user', userId);
+  formData.append('business_owner', ownerName);
+  formData.append('business_name', bussinessName);
+  formData.append('business_address', businessLocation);
+  formData.append('business_phone', mobileNumber);
+  formData.append('business_website', websiteLink);
+  formData.append('business_email', businessEmail);
+
+  // Append only selected category fields
+  if (selectedMainCategory?.key) {
+    formData.append('main_category', selectedMainCategory.key);
+  }
+
+  if (selectedSubCategory?.key) {
+    formData.append('sub_category', selectedSubCategory.key);
+  }
+
+  if (selectedSubSubCategory?.key) {
+    formData.append('sub_sub_category', selectedSubSubCategory.key);
+  }
+
+  // Append business logo if available
+  if (logo) {
+    const fileName = `logo_${Date.now()}.jpg`;
+    formData.append('logo', {
+      uri: logo,
+      type: 'image/jpeg',
+      name: fileName,
+    });
+  }
+
+  try {
+    const accessToken = await AuthStorage.getAccessToken();
+    if (!accessToken) {
+      Alert.alert('Access token not found. Please login again.');
+      return;
+    }
+
+    const response = await fetch('http://52.70.194.52/api/core/business-info/', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
     });
 
-    formData.append('user', userId);
-    formData.append('business_owner', ownerName);
-    formData.append('business_name', bussinessName);
-    formData.append('business_address', businessLocation);
-    formData.append('business_phone', mobileNumber);
-    formData.append('business_website', websiteLink);
-    formData.append('business_email', businessEmail);
+    console.log('Response Status:', response.status);
 
-    // Category IDs
-    formData.append('main_category', selectedMainCategory.key);
-    formData.append('sub_category', selectedSubCategory.key);
-    formData.append('sub_sub_category', selectedSubSubCategory.key);
+    if (response.ok) {
+      const responseData = await response.json();
+      dispatch(setBusinessProfile(responseData));
+      Alert.alert('Business Profile Created Successfully');
+      navigation.navigate('Appstack');
+    } else {
+      const errorData = await response.json();
+      const errorMessages = [];
 
-    // Business logo
-    if (logo) {
-      const fileName = `logo_${Date.now()}.jpg`;
-      formData.append('logo', {
-        uri: logo,
-        type: 'image/jpeg',
-        name: fileName,
-      });
-    }
-    // if (profilePic) {
-    //   const fileName = `profile_${Date.now()}.jpg`; // unique name
-    //   formData.append('profile_pic', {
-    //     uri: profilePic,
-    //     type: 'image/jpeg',
-    //     name: fileName,
-    //   });
-    // }
-    // Optional: Print form data
-    // for (let pair of formData.entries()) {
-    //   console.log(`${pair[0]}: ${pair[1]}`);
-    // }
-
-    try {
-      const accessToken = await AuthStorage.getAccessToken();
-      console.log('Access Token:', accessToken);
-
-      if (!accessToken) {
-        Alert.alert('Access token not found. Please login again.');
-        return;
-      }
-
-      const response = await fetch(
-        'http://52.70.194.52/api/core/business-info/',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            // DO NOT SET 'Content-Type' manually for FormData
-          },
-          body: formData,
-        },
-      );
-
-      console.log('Response Status:', response.status);
-
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('🚀 Response Data:', responseData);
-        dispatch(setBusinessProfile(responseData));
-        console.log('✅ Business profile set in Redux');
-        Alert.alert('Business Profile Created Successfully');
-        navigation.navigate('Appstack');
-      } else {
-        const errorData = await response.json();
-        console.log('❌ Error Response:', errorData);
-
-        const errorMessages = [];
-        for (const [key, value] of Object.entries(errorData)) {
-          if (Array.isArray(value)) {
-            errorMessages.push(...value);
-          } else {
-            errorMessages.push(value);
-          }
+      for (const [key, value] of Object.entries(errorData)) {
+        if (Array.isArray(value)) {
+          errorMessages.push(...value);
+        } else {
+          errorMessages.push(value);
         }
-
-        Alert.alert(
-          `Failed to create business profile: ${errorMessages.join(', ')}`,
-        );
       }
-    } catch (error) {
-      console.error('⚠️ API Error:', error);
-      Alert.alert('Something went wrong! Please check your connection.');
+
+      Alert.alert('Failed to create business profile', errorMessages.join(', '));
     }
-  };
+  } catch (error) {
+    console.error('⚠️ API Error:', error);
+    Alert.alert('Something went wrong! Please check your connection.');
+  }
+};
+
   const genderOptions = [
-    { value: 'male', key: 'male' },
-    { value: 'female', key: 'female' },
-    { value: 'other', key: 'other' },
+    { value: 'male', key: 'Male' },
+    { value: 'female', key: 'Female' },
+    { value: 'other', key: '0ther' },
   ];
   const isFormValid = firstName && lastName && gender;
   const isFormValids =  location;
@@ -493,7 +646,7 @@ export default function BussinessProfile() {
               source={profilePic ? {uri: profilePic} : null}
             />
             <TouchableOpacity
-              onPress={handleImagePicker}
+             onPress={() => handleImagePicker('profile')}
               style={styles.cameraIcon}>
               <Icon
                 name="camera"
@@ -643,9 +796,11 @@ export default function BussinessProfile() {
       borderWidth: 1,
     }}
     source={logo ? {uri: logo} : null}
+  
   />
               <TouchableOpacity
-                onPress={handleImagePicker}
+                // onPress={handleImagePicker}
+                  onPress={() => handleImagePicker('logo')}
                 style={styles.cameraIcon}>
                 <Icon
                   name="camera"
@@ -656,7 +811,7 @@ export default function BussinessProfile() {
             </View>
 
             <Text h4 semiBold>
-              Main Category*
+              Type of Business*
             </Text>
             <SingleSelect
               arrayData={mainCategories}
@@ -673,7 +828,7 @@ export default function BussinessProfile() {
 
             <View style={{marginTop: hp('2%')}}>
               <Text h4 semiBold>
-                Sub Category*
+               Business Sub Category*
               </Text>
               <SingleSelect
                 arrayData={subCategories}
@@ -706,14 +861,7 @@ export default function BussinessProfile() {
               />
             </View>
 
-            <View style={styles.ColRow}>
-              <Custominput
-                title="Business Owner*"
-                  width="92%"
-                value={ownerName}
-                onValueChange={setOwnerName}
-              />
-            </View>
+         
 
             <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
               <PrimaryButton
@@ -734,14 +882,24 @@ export default function BussinessProfile() {
         </KeyboardAvoidingView>
       )}
       {step === 4 && (
+        
         <Slide index={1}>
           <Header
             showBack={true}
+            title="Business Information"
             customBackEvent={() =>
               setStep(step > 0 ? step - 1 : navigation.goBack())
             }
           />
-          <View style={styles.stepContainer}>
+            <View style={{marginTop: hp('0%'),}}>
+               <View style={styles.ColRow}>
+              <Custominput
+                title="Business Owner*"
+                  width="92%"
+                value={ownerName}
+                onValueChange={setOwnerName}
+              />
+            </View>
             <View style={{marginTop: hp('3%')}}>
               <Custominput
                 title="Business Name*"

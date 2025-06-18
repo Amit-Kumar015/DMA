@@ -12,7 +12,7 @@ const Checkbox = ({ checked, onPress, customStyle, color }) => {
       <View style={styles.checkbox}>
         <Icon
           name={checked ? 'checkbox-marked' : 'checkbox-blank-outline'}
-          color={color || (checked ? 'black' : 'grey')} // ✅ color override support
+      color={color || (checked ? theme.$lightIconColor : theme.$lightIconColor)}// ✅ color override support
           size={24}
         />
       </View>

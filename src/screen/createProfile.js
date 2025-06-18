@@ -35,6 +35,7 @@ import ImageResizer from 'react-native-image-resizer';
 import Header from '../component/header';
 import Slide from '../assets/slide';
 import { setProfile } from '../slices/profileSlice';
+import ActivityIndicator from '../assets/activityIndicator';
 
 
 const CreateProfile = () => {
@@ -45,7 +46,6 @@ const CreateProfile = () => {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user.userData);
   const [step, setStep] = useState(0);
-  console.log('userrr', userData);
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
   const [dob, setDob] = useState();
@@ -55,11 +55,11 @@ const CreateProfile = () => {
   const [profilePic, setProfilePic] = useState();
   const [error, setError] = useState();
   const [isVisible, setIsVisible] = useState();
-
+const [loading, setLoading] = useState(false);
   const genderOptions = [
-    { value: 'male', key: 'male' },
-    { value: 'female', key: 'female' },
-    { value: 'other', key: 'other' },
+    { value: 'Male', key: 'Male' },
+    { value: 'Female', key: 'Female' },
+    { value: 'Other', key: 'Other' },
   ];
   const list = [
     { title: 'Take Photo', icon: 'camera', onPress: () => handleCameraOpen() },
@@ -151,69 +151,131 @@ const CreateProfile = () => {
       console.log('Gallery Error:', error);
     }
   };
-  const handleCreateProfile = async () => {
-    const formData = new FormData();
+//   const handleCreateProfile = async () => {
+//     const formData = new FormData();
 
-    formData.append('user', userId);
-    formData.append('first_name', firstName);
-    formData.append('last_name', lastName);
-    formData.append('gender', gender?.value); 
-    formData.append('location', location);
-    formData.append('bio', bio);
-    // formData.append('profile_pic', {
-    //   uri: profilePic,
-    //   name: 'profile.jpg',
-    //   type: 'image/jpeg',
-    // });
-    if (profilePic) {
-      const fileName = `profile_${Date.now()}.jpg`; // unique name
-      formData.append('profile_pic', {
-        uri: profilePic,
-        type: 'image/jpeg',
-        name: fileName,
-      });
+//     formData.append('user', userId);
+//     formData.append('first_name', firstName);
+//     formData.append('last_name', lastName);
+//  formData.append('gender', gender?.value?.toLowerCase())
+//     formData.append('location', location);
+//     formData.append('bio', bio);
+//     // formData.append('profile_pic', {
+//     //   uri: profilePic,
+//     //   name: 'profile.jpg',
+//     //   type: 'image/jpeg',
+//     // });
+//     if (profilePic) {
+//       const fileName = `profile_${Date.now()}.jpg`; // unique name
+//       formData.append('profile_pic', {
+//         uri: profilePic,
+//         type: 'image/jpeg',
+//         name: fileName,
+//       });
+//     }
+//     try {
+//       const accessToken = await AuthStorage.getAccessToken();
+
+//       const response = await fetch(
+//         'http://52.70.194.52/api/core/personal-info/',
+//         {
+//           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//             'Content-Type': 'multipart/form-data',
+//           },
+//           body: formData,
+//         },
+//       );
+//       if (response.ok) {
+//         const responseData = await response.json();
+//         dispatch(setProfile(responseData));
+//         Alert.alert(' Profile Created Successfully');
+//         // setStep(3)
+//         navigation.navigate('Appstack');
+//       } else {
+//         const errorData = await response.json();
+//         console.log('Error Response:', errorData);
+//         Alert.alert(
+//           `Failed to create  profile: ${
+//             errorData.message || 'Please try again.'
+//           }`,
+//         );
+//       }
+//     } catch (error) {
+//       console.error('API Error:', error);
+//       Alert.alert('Something went wrong! Please check your connection.');
+//     }
+//   };
+const handleCreateProfile = async () => {
+    if (!profilePic) {
+    Alert.alert('⚠️ Missing Profile Picture', 'Please add a profile picture.');
+    return;
+  }
+  setLoading(true); // Start loading
+
+  const formData = new FormData();
+  formData.append('user', userId);
+  formData.append('first_name', firstName);
+  formData.append('last_name', lastName);
+  formData.append('gender', gender?.value?.toLowerCase());
+  formData.append('location', location);
+  formData.append('bio', bio);
+
+  if (profilePic) {
+    const fileName = `profile_${Date.now()}.jpg`;
+    formData.append('profile_pic', {
+      uri: profilePic,
+      type: 'image/jpeg',
+      name: fileName,
+    });
+  }
+
+  try {
+    const accessToken = await AuthStorage.getAccessToken();
+
+    const response = await fetch('http://52.70.194.52/api/core/personal-info/', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
+    });
+
+    const responseData = await response.json();
+
+    if (response.ok) {
+      dispatch(setProfile(responseData));
+      Alert.alert('✅ Profile Created Successfully');
+      navigation.navigate('Appstack');
+    } else {
+      const message = responseData?.message || 'Please try again later.';
+      console.log('Error Response:', responseData);
+      Alert.alert('❌ Failed to create profile', message);
     }
+  } catch (error) {
+    // console.error('API Error:', error);
+
+    let errorMessage = 'Something went wrong. Please try again later.';
     try {
-      const accessToken = await AuthStorage.getAccessToken();
-      // const accessToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQyNzEzMjg5LCJpYXQiOjE3NDIxMDg0ODksImp0aSI6IjhhNzJmMzIwMmNlMjQxN2M4MTZhMzdmZTQ4M2Q3M2E1IiwidXNlcl9pZCI6IjJjZDJiYjViLTU1NzAtNDk3My04YjMzLWQ4Yzc1YTY2MjEzNSJ9.IsmmJBg4NrBFdmdZ6oehtotLMIIkrcdhe6-chI4wLbo"
-      console.log('Access Token:', accessToken);
-      console.log('FormData:', formData);
-
-      const response = await fetch(
-        'http://52.70.194.52/api/core/personal-info/',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
-          body: formData,
-        },
-      );
-
-      console.log('Response Status:', response.status); // ✅ Console the status
-
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('🚀 Response Data:', responseData);
-        dispatch(setProfile(responseData));
-        Alert.alert(' Profile Created Successfully');
-        // setStep(3)
-        navigation.navigate('Appstack');
-      } else {
-        const errorData = await response.json();
-        console.log('Error Response:', errorData);
-        Alert.alert(
-          `Failed to create  profile: ${
-            errorData.message || 'Please try again.'
-          }`,
-        );
+      // Attempt to parse JSON if it's a fetch error with a response body
+      if (error?.response?.json) {
+        const errorData = await error.response.json();
+        errorMessage = errorData?.message || errorMessage;
+      } else if (error?.message) {
+        errorMessage = error.message;
       }
-    } catch (error) {
-      console.error('API Error:', error);
-      Alert.alert('Something went wrong! Please check your connection.');
+    } catch (jsonError) {
+      // console.error('Error parsing error response:', jsonError);
     }
-  };
+
+    Alert.alert('❌ Failed to create profile', errorMessage);
+  } finally {
+    setLoading(false); // Always stop loading
+  }
+};
+
 
   const handleGenderSelect = (uniqueId, selectedOption) => {
     setGender(selectedOption);  // Updating selected gender
@@ -354,6 +416,7 @@ const CreateProfile = () => {
               onValueChange={setLocation}
             />
             <Custominput
+               width="92%"
               height="13%"
               title="About You"
               marginTop={15}
@@ -361,7 +424,7 @@ const CreateProfile = () => {
               onValueChange={setBio}
             />
 
-<ButtonWithPushBack customContainerStyle={{ marginVertical: 50 }}>
+{/* <ButtonWithPushBack customContainerStyle={{ marginVertical: 50 }}>
   <PrimaryButton
     title="Create Profile"
     onPress={() => {
@@ -371,6 +434,19 @@ const CreateProfile = () => {
     }}
     disabled={!isFormValids}
   />
+</ButtonWithPushBack> */}
+<ButtonWithPushBack customContainerStyle={{ marginVertical: 50 }}>
+  <PrimaryButton
+    title={loading ? '' : 'Create Profile'}
+    onPress={() => {
+      if (isFormValids && !loading) {
+        handleCreateProfile();
+      }
+    }}
+    disabled={!isFormValids || loading}
+  >
+    {loading && <ActivityIndicator color="#fff" />}
+  </PrimaryButton>
 </ButtonWithPushBack>
           </View>
         </Slide>

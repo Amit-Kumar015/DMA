@@ -135,11 +135,13 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        {...(Platform.OS === 'android' && TOP_SPACE_ANDROID)},
-      ]}>
+ <SafeAreaView
+  style={[
+    styles.container,
+    { backgroundColor: theme.$background }, // ✅ dynamic background color
+    Platform.OS === 'android' && TOP_SPACE_ANDROID,
+  ]}
+>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
         style={{flex: 1}}>
@@ -156,6 +158,7 @@ export default function Login() {
                 ref={inputRef}
                 label="Email or Phone"
                 placeholder="Email or Phone"
+                placeholderColor
                 value={emailOrPhone}
                 onChangeText={validateEmailOrPhone}
               />
@@ -200,10 +203,14 @@ export default function Login() {
             </ButtonWithPushBack>
           </View>
           <View style={styles.signupLink}>
-            <Text h5 semiBold>
+            <Text h5 semiBold style={{color: theme.$lightText}}>
               Don't have an account?{' '}
               <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                <Text h5 semiBold style={{top: 7}}>
+              <Text
+  h5
+  semiBold
+  style={[{ top: 7, color: theme.$lightText }]}
+>
                   Sign Up
                 </Text>
               </TouchableOpacity>
@@ -219,7 +226,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: wp('4%'),
-    backgroundColor:"#ffffff"
   },
   wrapper: {
     flex: 1,

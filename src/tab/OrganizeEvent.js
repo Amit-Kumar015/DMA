@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     selectedInterestName: {
-        fontSize: 14,
         color: "#333",
         marginRight: 5,
     },
@@ -280,7 +279,6 @@ const styles = StyleSheet.create({
         borderBottomColor: "#ccc",
     },
     interestName: {
-        fontSize: 16,
         color: "#000",
     },
     list: {

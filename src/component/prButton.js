@@ -20,7 +20,7 @@ const PrimaryButton = (props) => {
 
   const { theme } = useTheme();
   const height = size === 'small' ? 41 : 42;
-  const textColor = '#ffffff';
+  const textColor = theme.$background
 
   // Disable the onPress action if disabled is true
   const handlePress = () => {
@@ -35,7 +35,7 @@ const PrimaryButton = (props) => {
         styles.button,
         {
           height,
-          backgroundColor: disabled ? '#696969' : customsBg || '#000000', // Handle disabled background color
+          backgroundColor: disabled ? '#696969' : customsBg || theme.$lightText, // Handle disabled background color
         },
         buttonStyle,
       ]}
@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.medium,
-    fontSize: sizes.h4,
-    lineHeight: lineHeights.h4,
+    fontSize: sizes.h5,
+    lineHeight: lineHeights.h5,
   },
   titleSmall: {
     fontSize: sizes.h5,

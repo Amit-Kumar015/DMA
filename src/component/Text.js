@@ -1,7 +1,8 @@
 import React from 'react';
 import { Text as RNText, StyleSheet } from 'react-native';
-import { sizes, fonts, lineHeights } from '../config/fonts';
-
+import { sizes,lineHeights, fonts } from '../config/fonts';
+import useTheme from '../hooks/useTheme';
+console.log("fonts object:", fonts);
 const Text = (props) => {
   const {
     style,
@@ -24,9 +25,9 @@ const Text = (props) => {
     textAliments,
     ...rest
   } = props;
-
-  const defaultColor = "#000000"; // Default color
-  const primaryColor = '#FFFFFF'; // Primary color
+  const {theme} = useTheme();
+  const defaultColor = theme.$lightText; // Default color
+  const primaryColor = theme.$lightText; // Primary color
 
   return (
     <RNText
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     fontSize: sizes.base,
     textAlign: textAliments || 'left',
     color,
-    fontFamily: fonts.regular, // Default font
+   fontFamily: fonts?.regular || 'System', // Default font
   }),
   medium: {
     fontFamily: fonts.medium,

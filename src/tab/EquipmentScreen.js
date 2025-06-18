@@ -10,6 +10,8 @@ import {
   FlatList,
   Alert,
   ToastAndroid,
+  SafeAreaView,
+  Image,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../component/header';
@@ -32,6 +34,7 @@ import AuthStorage from '../utils/authStorage';
 import ImageResizer from 'react-native-image-resizer';
 import {useFocusEffect} from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import TextInputEml from '../component/textInput';
 
 const EquipmentScreen = () => {
   const {theme} = useTheme();
@@ -54,6 +57,9 @@ const EquipmentScreen = () => {
   console.log('Name:', equipmentName);
 console.log('Description:', equipmentDescription);
 console.log('Count:', equipmentCount);
+const [nameError, setNameError] = useState('');
+const [descError, setDescError] = useState('');
+const [countError, setCountError] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -137,61 +143,61 @@ console.log('Count:', equipmentCount);
     }
   };
 
-  const handleCreateEquipment = async () => {
-    if (!equipmentName || !equipmentDescription || !equipmentCount) {
-      Alert.alert('Error', 'All fields are required.');
-      return;
-    }
+  // const handleCreateEquipment = async () => {
+  //   if (!equipmentName || !equipmentDescription || !equipmentCount) {
+  //     Alert.alert('Error', 'All fields are required.');
+  //     return;
+  //   }
 
-    const formData = new FormData();
-    formData.append('name', equipmentName);
-    formData.append('description', equipmentDescription);
-    formData.append('no_of_equipment', equipmentCount);
+  //   const formData = new FormData();
+  //   formData.append('name', equipmentName);
+  //   formData.append('description', equipmentDescription);
+  //   formData.append('no_of_equipment', equipmentCount);
 
-    if (profilePic) {
-      formData.append('image', {
-        uri: profilePic,
-        name: `equipment_image_${Date.now()}.jpg`,
-        type: 'image/jpeg',
-      });
-    }
+  //   if (profilePic) {
+  //     formData.append('image', {
+  //       uri: profilePic,
+  //       name: `equipment_image_${Date.now()}.jpg`,
+  //       type: 'image/jpeg',
+  //     });
+  //   }
 
-    try {
-      const accessToken = await AuthStorage.getAccessToken();
+  //   try {
+  //     const accessToken = await AuthStorage.getAccessToken();
 
-      const response = await fetch('http://52.70.194.52/api/core/equipment/', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
-     console.log("res",response)
-     console.log("formData",formData)
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (jsonError) {
-        console.error('JSON Parse Error:', jsonError);
-        Alert.alert('Error', 'Unexpected response format. Please try again.');
-        return;
-      }
+  //     const response = await fetch('http://52.70.194.52/api/core/equipment/', {
+  //       method: 'POST',
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //       },
+  //       body: formData,
+  //     });
+  //    console.log("res",response)
+  //    console.log("formData",formData)
+  //     const responseText = await response.text();
+  //     let data;
+  //     try {
+  //       data = JSON.parse(responseText);
+  //     } catch (jsonError) {
+  //       console.error('JSON Parse Error:', jsonError);
+  //       Alert.alert('Error', 'Unexpected response format. Please try again.');
+  //       return;
+  //     }
 
-      if (response.ok) {
-        Alert.alert('Success', 'Equipment added successfully');
+  //     if (response.ok) {
+  //       Alert.alert('Success', 'Equipment added successfully');
 
-        // **Step reset hone se pehle list refresh karna zaroori hai**
-        await fetchEquipmentList(); // API se latest list fetch karo
-        setStep(0);
-      } else {
-        // Alert.alert('Error', data.message || 'Something went wrong');
-      }
-    } catch (error) {
-      console.error('Network/Request Error:', error);
-      Alert.alert('Error', 'Failed to add equipment. Please try again.');
-    }
-  };
+  //       // **Step reset hone se pehle list refresh karna zaroori hai**
+  //       await fetchEquipmentList(); // API se latest list fetch karo
+  //       setStep(0);
+  //     } else {
+  //       // Alert.alert('Error', data.message || 'Something went wrong');
+  //     }
+  //   } catch (error) {
+  //     console.error('Network/Request Error:', error);
+  //     Alert.alert('Error', 'Failed to add equipment. Please try again.');
+  //   }
+  // };
 
   const fetchEquipmentList = async () => {
     try {
@@ -217,6 +223,76 @@ console.log('Count:', equipmentCount);
       Alert.alert('Error', 'Something went wrong.');
     }
   };
+const handleCreateEquipment = async () => {
+  let valid = true;
+
+  // Reset errors
+  setNameError('');
+  setDescError('');
+  setCountError('');
+
+  // Field validations
+  if (!equipmentName) {
+    setNameError('Equipment name is required');
+    valid = false;
+  }
+
+  if (!equipmentDescription) {
+    setDescError('Description is required');
+    valid = false;
+  }
+
+  if (!equipmentCount) {
+    setCountError('Count is required');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  const formData = new FormData();
+  formData.append('name', equipmentName);
+  formData.append('description', equipmentDescription);
+  formData.append('no_of_equipment', equipmentCount);
+
+  if (profilePic) {
+    formData.append('image', {
+      uri: profilePic,
+      name: `equipment_image_${Date.now()}.jpg`,
+      type: 'image/jpeg',
+    });
+  }
+
+  try {
+    const accessToken = await AuthStorage.getAccessToken();
+    const response = await fetch('http://52.70.194.52/api/core/equipment/', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error('JSON Parse Error:', jsonError);
+      return;
+    }
+
+    if (response.ok) {
+      Alert.alert('Success', 'Equipment added successfully');
+      await fetchEquipmentList();
+      setStep(0);
+    } else {
+      console.error('Server Error:', data);
+      Alert.alert('Error', data.message || 'Something went wrong');
+    }
+  } catch (error) {
+    console.error('Network Error:', error);
+  }
+};
 
   const handleViewPress = async id => {
     try {
@@ -368,60 +444,83 @@ console.log('Count:', equipmentCount);
     setStep(1);
   };
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+           style={[
+             styles.container,
+             { backgroundColor: theme.$background }, // ✅ dynamic background color
+           ]}
+         >
       {step === 0 && <Header showBack={true} title="Equipment" />}
 
-      {step === 0 && equipmentList.length > 0 ? (
-        <View>
-          {/* <Header showBack={true} title="Equipment" /> */}
-          <FlatList
-            data={equipmentList}
-            keyExtractor={item => item.id.toString()}
-            numColumns={2}
-            renderItem={({item}) => (
-              <Card third style={styles.card}>
-                <Avatar
-                  size={wp('20%')}
-                  source={
-                    item.image
-                      ? {uri: item.image}
-                      : require('../assets/icon/profiles.png')
-                  }
-                />
-                <View style={{marginTop: hp('1%')}}>
-                  <Text h4 semiBold textAliments="center">
-                    {item.name}
-                  </Text>
-                </View>
-                <View style={{position: 'relative'}}>
-                  <TouchableOpacity
-                    onPress={() => handleViewPress(item.id, setStep(2))}
-                    style={styles.viewButton}>
-                    <Text h5 style={{color:"white"}}>View</Text>
-                  </TouchableOpacity>
-                  <View style={styles.circle}>
-                    <Text style={styles.circleText}>
-                      {item.no_of_equipment}
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-            )}
-          />
-        </View>
-      ) : (
-        step === 0 && (
-          <Text style={{textAlign: 'center', marginTop: 20, color: 'white'}}>
-            No equipment added yet.
-          </Text>
-        )
-      )}
+{step === 0 && (
+  equipmentList.length > 0 ? (
+    <View style={{ paddingHorizontal: 16 }}>
+      <FlatList
+        data={equipmentList}
+        keyExtractor={item => item.id.toString()}
+        numColumns={2}
+        renderItem={({ item }) => (
+          <Card third style={styles.card}>
+            <Avatar
+              size={wp('20%')}
+              overlayContainerStyle={{
+                backgroundColor: theme.$surface,
+                borderColor: theme.$secondaryText,
+                borderWidth: 1,
+              }}
+              source={
+                item.image
+                  ? { uri: item.image }
+                  : require('../assets/icon/profiles.png')
+              }
+            />
+            <View style={{ marginTop: hp('1%') }}>
+              <Text h4 semiBold textAliments="center" customColor="black">
+                {item.name}
+              </Text>
+            </View>
+            <View style={{ position: 'relative' }}>
+              <TouchableOpacity
+                onPress={() => handleViewPress(item.id, setStep(2))}
+                style={styles.viewButton}>
+                <Text h6 style={{ color: 'white' }}>View</Text>
+              </TouchableOpacity>
+              <View style={styles.circle}>
+                <Text style={styles.circleText}>
+                  {item.no_of_equipment}
+                </Text>
+              </View>
+            </View>
+          </Card>
+        )}
+      />
+    </View>
+  ) : (
+    <View style={{ alignItems: 'center', marginTop: 50 }}>
+      <Image
+        source={require('../assets/icon/attendence.webp')} // Or use a specific equipment placeholder image
+        style={{
+          width: 200,
+          height: 200,
+          resizeMode: 'contain',
+          marginBottom: 60,
+        }}
+      />
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text h3 bold textAliments="center" customColor="black">
+          No Equipment available.
+        </Text>
+      </View>
+    </View>
+  )
+)}
+
 
       {step === 0 && (
         <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
           <PrimaryButton
             title="Add"
-            icon={<Icon name="plus" type="feather" size={15} color="white" />}
+            icon={<Icon name="plus" type="feather" size={15} color={theme.$background} />}
             onPress={() => handleAddNewEquipment()}
           />
         </ButtonWithPushBack>
@@ -431,7 +530,7 @@ console.log('Count:', equipmentCount);
         <Slide index={1}>
           <Header
             showBack={true}
-            title="Add New Equipment"
+            title="Create New Equipment"
             customBackEvent={() =>
               setStep(step > 0 ? step - 1 : navigation.goBack())
             }
@@ -468,11 +567,23 @@ console.log('Count:', equipmentCount);
                 </View>
 
                 <View style={styles.inputContainer}>
-                  <Custominput
+                  {/* <Custominput
                     title="Equipment Name"
                     value={equipmentName}
                     onValueChange={setEquipmentName}
-                  />
+                  /> */}
+                     <TextInputEml
+                // ref={inputRef}
+                label="Equipment Name"
+                placeholder="Equipment Name"
+                value={equipmentName}
+                onChangeText={setEquipmentName}
+               
+              />
+              {nameError ? (
+  <Text style={{ color: 'red', marginTop: 4 }}>{nameError}</Text>
+) : null}
+              
                 </View>
                 <View style={styles.inputContainer}>
                   <Custominput
@@ -480,14 +591,30 @@ console.log('Count:', equipmentCount);
                     value={equipmentDescription}
                     onValueChange={setEquipmentDescription}
                   />
+                       {/* <TextInputEml
+                // ref={inputRef}
+                label="Equipment Description"
+                placeholder="Equipment Description"
+                value={equipmentDescription}
+                onChangeText={equipmentDescription} */}
+               
+              {/* /> */}
+                        {descError ? (
+  <Text style={{ color: 'red', marginTop: 4 }}>{descError}</Text>
+) : null}
                 </View>
                 <View style={styles.inputContainer}>
-                  <Custominput
-                    title="Count"
-                    value={equipmentCount}
-                    onValueChange={setEquipmentCount}
-                    keyboardType="numeric"
-                  />
+                           <TextInputEml
+                // ref={inputRef}
+                label="Count"
+                placeholder="Count"
+                value={equipmentCount}
+                onChangeText={setEquipmentCount}
+                keyboardType="numeric"
+              />
+                                  {countError ? (
+  <Text style={{ color: 'red', marginTop: 4 }}>{countError}</Text>
+) : null}
                 </View>
               </View>
 
@@ -615,28 +742,51 @@ console.log('Count:', equipmentCount);
                   </TouchableOpacity> */}
                 </View>
 
-                <View style={styles.inputContainer}>
-                  <Custominput
+              <View style={styles.inputContainer}>
+                  {/* <Custominput
                     title="Equipment Name"
                     value={equipmentName}
                     onValueChange={setEquipmentName}
-                  />
+                  /> */}
+                     <TextInputEml
+                // ref={inputRef}
+                label="Equipment Name"
+                placeholder="Equipment Name"
+                value={equipmentName}
+                onChangeText={setEquipmentName}
+               
+              />
                 </View>
                 <View style={styles.inputContainer}>
-                  <Custominput
+                  {/* <Custominput
                     title="Equipment Description"
                     value={equipmentDescription}
-                    onValueChange={setEquipmentDescription}
-                  />
+                    onValueChange={equipmentDescription}
+                  /> */}
+                       <TextInputEml
+                // ref={inputRef}
+                label="Equipment Description"
+                placeholder="Equipment Description"
+                value={equipmentDescription}
+                onChangeText={equipmentDescription}
+               
+              />
                 </View>
                 <View style={styles.inputContainer}>
-                  <Custominput
+                  {/* <Custominput
                     title="Count"
                     value={equipmentCount}
                     onValueChange={setEquipmentCount}
                     keyboardType="numeric"
-                  />
-                  
+                  /> */}
+                           <TextInputEml
+                // ref={inputRef}
+                label="Count"
+                placeholder="Count"
+                value={equipmentCount}
+                onChangeText={setEquipmentCount}
+                keyboardType="numeric"
+              />
                 </View>
               </View>
 
@@ -662,11 +812,11 @@ console.log('Count:', equipmentCount);
           </KeyboardAvoidingView>
           <ButtonWithPushBack customContainerStyle={styles.buttonContainers}>
             {/* <PrimaryButton title="Update" onPress={""} /> */}
-            <PrimaryButton title="Edit" onPress={handleEditEquipment} />
+            <PrimaryButton title="Save" onPress={handleEditEquipment} />
           </ButtonWithPushBack>
         </Slide>
       )}
-    </View>
+    </SafeAreaView>
 
     // </TouchableWithoutFeedback>
   );
@@ -678,8 +828,7 @@ const styles = StyleSheet.create({
   container: {
     width: wp('100%'),
     height: hp('100%'),
-    backgroundColor: '#ffffff',
-    padding: hp('2%'),
+    paddingHorizontal:16
   },
   buttonContainer: {
     position: 'absolute',
@@ -688,10 +837,10 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     marginTop: hp('3%'),
-    paddingHorizontal: 5,
+    paddingHorizontal: 16,
   },
   inputContainer: {
-    marginTop: hp('3%'),
+    marginTop: hp('2%'),
   },
   avatarWrapper: {
     justifyContent: 'center',
@@ -713,7 +862,8 @@ const styles = StyleSheet.create({
     paddingBottom: hp('5%'),
   },
   buttonContainers: {
-    marginVertical: 80,
+    marginVertical: 20,
+    justifyContent:"flex-end",
     width: '50%',
     alignSelf: 'center', // Centers the button
   },
@@ -725,8 +875,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     borderWidth: 1,
-    borderColor: 'black', // Border color
+    borderColor: 'black',
+      // Border color
   },
+
 
   cardContent: {
     // flexDirection: 'row',
@@ -744,9 +896,9 @@ const styles = StyleSheet.create({
   buttonCont: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // alignItems: "center",
+
     marginTop: 80,
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   updateButton: {
     // backgroundColor: "#4CAF50", // Green color for update
@@ -760,10 +912,10 @@ const styles = StyleSheet.create({
   circle: {
     position: 'absolute',
     top: '40%', // Align center vertically
-    right: -40, // Move it outside the button
-    width: 25,
-    height: 25,
-    borderRadius: 12.5, // Make it circular
+    right: -28, // Move it outside the button
+    width: 23,
+    height: 23,
+    borderRadius: 11.5, // Make it circular
     backgroundColor: 'grey',
     justifyContent: 'center',
     alignItems: 'center',

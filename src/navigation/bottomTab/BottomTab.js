@@ -24,30 +24,23 @@ import ProfileScreen from '../../tab/Profile';
 import { useFocusEffect } from '@react-navigation/native';
 import AuthStorage from '../../utils/authStorage';
 import axios from 'axios';
+import useTheme from '../../hooks/useTheme';
 // const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 function BottomTabNavigator() {
   const dispatch = useDispatch();
   const Appstack = require("../AppStack/appStack").default;
   const userData = useSelector(state => state.user.userData);
-    console.log('userData', userData);
     const [userType, setUserType] = useState('');
     const [userName, setUserName] = useState('');
-    console.log('usersss', userType);
-    console.log('userName', userName);
     const businessProfile = useSelector(state => state.auth.businessProfile);
-    console.log('Business Name:', businessProfile);
     const profileData = useSelector((state) => state.profile.Profile);
-    console.log('🙌 Profile Data:', profileData);
     const personalProfile = useSelector(state => state.auth.personalProfile);
-    console.log('persinaldata', personalProfile);
     const [userId, setUserId] = useState('');
-    console.log("userId",userId)
     const [storedProfile, setStoredProfile] = useState(null);
-    console.log("storeProfile",storedProfile)
 
   const [showTab, setShowtab] = useState('flex');
-
+const {theme}=useTheme()
   useEffect(() => {
     if (profileData?.data?.id) {
       const storeProfileId = async () => {
@@ -126,37 +119,47 @@ function BottomTabNavigator() {
     }
   }, [profileData]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const fetchPersonalInfo = async () => {
-        const userIdToUse = userId || profileData?.data?.user?.id;
-        if (!userIdToUse) return;
-  
-        try {
-          const accessToken = await AuthStorage.getAccessToken();
-          const response = await axios.get(
-            `http://52.70.194.52/api/core/user-full-detail/${userIdToUse}/`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
-  
-          if (response?.data) {
-            console.log('📥 Personal Info API response:', response.data);
-            setStoredProfile(response.data);
-          } else {
-            console.error('⚠️ API returned null or no data');
+useFocusEffect(
+  React.useCallback(() => {
+    console.log("🚨 useFocusEffect triggered");
+
+    const fetchPersonalInfo = async () => {
+      const userIdToUse = userId || profileData?.data?.user?.id;
+      console.log("🔍 userIdToUse:", userIdToUse);
+
+      if (!userIdToUse) {
+        console.log("⚠️ No userId to use, exiting early");
+        return;
+      }
+
+      try {
+        const accessToken = await AuthStorage.getAccessToken();
+        console.log("🔑 Access Token:", accessToken);
+
+        const response = await axios.get(
+          `http://52.70.194.52/api/core/user-full-detail/${userIdToUse}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
-        } catch (error) {
-          console.error('❌ Error fetching user data:', error);
+        );
+
+        if (response?.data) {
+          console.log('📥 API response:', response.data);
+          setStoredProfile(response.data);
+        } else {
+          console.error('⚠️ API returned null or no data');
         }
-      };
-  
-      fetchPersonalInfo();
-    }, [userId, profileData])
-  )
+      } catch (error) {
+        console.error('❌ Error fetching user data:', error.message);
+      }
+    };
+
+    fetchPersonalInfo();
+  }, [userId, profileData])
+);
+
   const hideTabbar = (hide = false) => {
     // console.log(hide,'hide======')
     if (hide == false) {
@@ -210,28 +213,33 @@ function BottomTabNavigator() {
           tabBarStyle: {
             height: 70,
             display: showTab,
-            backgroundColor: '#fff',
+         backgroundColor: theme.$background || "#fff",
             borderTopWidth: 0,
             // elevation: 10,
           },
           
           // // tabBarStyle: {height: 80, backgroundColor: '#ffffff',display: 'flex',},
           // tabBarInactiveTintColor: '#f1a722',
-          tabBarInactiveTintColor: '#000',
-          tabBarActiveTintColor: '#f1a722',
+          // tabBarInactiveTintColor: '#000',
+          // tabBarActiveTintColor: '#f1a722',
+          tabBarInactiveTintColor: theme.$background || '#000',
+tabBarActiveTintColor: theme.$background || '#f1a722',
           tabBarLabelStyle: {paddingBottom:2},
           tabBarIcon: ({color, size, focused}) => {
             let iconName;
             if (route.name === "Home") {
               iconName = focused ? 'home' : 'home-outline';
-              return <Ionicons name={iconName} size={25} color={color} />;
+              return <Ionicons name={iconName} size={25} color={theme.$lightText} />;
             }
 
             if (route.name === "Reels") {
               return (
               <Image 
               source={require('../../assets/icon/reels.png')} 
-              style={{ width: 25, height: 25, tintColor: 'black' }} 
+              style={{ width: 25, height: 25, tintColor: 'black',tintColor: theme.$lightText ,
+                  borderWidth: focused ? 2 : 0,
+                      borderColor: focused ? '#f1a722' : 'transparent',
+              }} 
             />
           )}
           
@@ -240,9 +248,9 @@ function BottomTabNavigator() {
             return (
               <View
                 style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 35,
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
                   backgroundColor: 'black',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -255,8 +263,12 @@ function BottomTabNavigator() {
                 }}
               >
                 <Image 
-                  source={require('../../assets/icon/login.jpg')} 
-                  style={{ width: 40, height: 40,borderRadius:20  }} 
+                  source={require('../../assets/icon/tab.jpg')} 
+                  style={{ width: 50, height: 50,borderRadius:25 ,
+                      borderWidth: focused ? 2 : 0,
+                      borderColor: focused ? '#f1a722' : 'transparent',
+                   }} 
+                  
                 />
               </View>
             );
@@ -264,7 +276,7 @@ function BottomTabNavigator() {
           
             if (route.name === "Search") {
               iconName = focused ? 'saved-search' : 'search';
-              return <MaterialIcons name={iconName} size={30} color={color || 'black'} />;
+              return <MaterialIcons name={iconName} size={30} color={theme.$lightText}  />;
             }
             // if (route.name === "ProfileScreen") {
             //   iconName = focused ? 'profile' : 'Profile';
@@ -284,7 +296,7 @@ function BottomTabNavigator() {
                     height: 26,
                     borderRadius: 13,
                     borderWidth: focused ? 2 : 0,
-                    borderColor: focused ? '#f1a722' : 'transparent',
+                      borderColor: focused ? '#f1a722' : 'transparent',
                   }}
                 />
               );

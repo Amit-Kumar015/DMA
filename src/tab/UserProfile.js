@@ -1,4 +1,4 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useState, useCallback } from 'react';
 import { Alert, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Text from '../component/Text';
@@ -18,13 +18,16 @@ import ActivityIndicator from '../assets/activityIndicator';
 import useTheme from '../hooks/useTheme';
 import ButtonWithPushBack from '../component/Button';
 import PrimaryButton from '../component/prButton';
+import CustomGrid from '../component/Grid';
 
 const UserProfile = ({ route }) => {
+  const navigation = useNavigation();
   const { userType, userId } = route.params;
   const {theme} = useTheme();
   const [storeProfile, setStoredProfile] = useState(null); // Fix: useState(null), not useState()
   console.log("storeProfile", storeProfile);
   console.log("userType",userType)
+  console.log("user",userId)
     const [selected, setSelected] = useState(null);
 
   useFocusEffect(
@@ -57,8 +60,30 @@ const UserProfile = ({ route }) => {
   );
 
   // Optionally render data or loading state here
+  const images = [
+  { uri: 'https://picsum.photos/id/1012/300/300' },
+  { uri: 'https://picsum.photos/id/1012/300/300' },
+  { uri: 'https://picsum.photos/id/1013/300/300' },
+  { uri: 'https://picsum.photos/id/1015/300/300' },
+  { uri: 'https://picsum.photos/id/1016/300/300' },
+  { uri: 'https://picsum.photos/id/1018/300/300' },
+  { uri: 'https://picsum.photos/id/1020/300/300' },
+  { uri: 'https://picsum.photos/id/1024/300/300' },
+  { uri: 'https://picsum.photos/id/1025/300/300' },
+  { uri: 'https://picsum.photos/id/1027/300/300' },
+  { uri: 'https://picsum.photos/id/1028/300/300' },
+  { uri: 'https://picsum.photos/id/1031/300/300' },
+  { uri: 'https://picsum.photos/id/1033/300/300' },
+  { uri: 'https://picsum.photos/id/1035/300/300' },
+  { uri: 'https://picsum.photos/id/1037/300/300' },
+];
+
   return (
-    <SafeAreaView style={style.Container}>
+  <SafeAreaView
+       style={[
+         style.Container,
+         {backgroundColor: theme.$background}, // ✅ dynamic background color
+       ]}>
     {/* Header */}
     <Header
   showBack={true}
@@ -66,13 +91,13 @@ const UserProfile = ({ route }) => {
       rightComponent={
         <View style={{ flexDirection: 'row', gap: 15 }}>
           <TouchableOpacity onPress={() => navigation.navigate('uploadreels')}>
-            <AntDesign name="plussquareo" size={23} color={'black'} />
+            <AntDesign name="plussquareo" size={23} color={theme.$lightText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => alert('Bell Icon Clicked!')}>
-            <Icon name="bell" size={23} color={'black'} />
+            <Icon name="bell" size={23} color={theme.$lightText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
-            <Icon name="menu" size={23} color={'black'} />
+            <Icon name="menu" size={23} color={theme.$lightText} />
           </TouchableOpacity>
         </View>
       }
@@ -98,7 +123,7 @@ const UserProfile = ({ route }) => {
 )}
    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 15 }}>
   <View style={{ alignItems: 'center', minWidth: '20%' }}>
-    <Text h4 semiBold numberOfLines={1}>0</Text>
+    <Text h4 semiBold numberOfLines={1}>15</Text>
     <Text h5 semiBold numberOfLines={1}>Posts</Text>
   </View>
   <View style={{ alignItems: 'center', minWidth: '30%' }}>
@@ -122,11 +147,25 @@ const UserProfile = ({ route }) => {
   <PrimaryButton
     title="Follow"
     onPress={() => {
+          setSelected('Follow');
       Alert.alert("coming soon");
     }}
-    customsBg={selected === 'edit' ? '#000' : '#D3D3D3'} // Black if selected
+  //  customsBg={selected === 'Follow' ? '#000' : 'transparent'} // Black if selected, else transparent
+  //   titleStyle={{
+  //     color: selected === 'Follow' ? '#fff' : '#000', // White if selected, else black
+  //   }}
+  //      buttonStyle={{
+  //     borderWidth: 1,
+  //     borderColor: '#000',
+  //   }}
+      customsBg={selected === 'Follow' ? theme.$primary : 'transparent'}
     titleStyle={{
-      color: selected === 'edit' ? '#fff' : '#333', // White text if selected
+      color: selected === 'Follow' ? theme.$onPrimary : theme.$lightText, // text color based on selection
+    }}
+       buttonStyle={{
+      borderWidth: 1,
+      borderColor: theme.$lightText,
+   
     }}
   />
 </ButtonWithPushBack>
@@ -135,24 +174,56 @@ const UserProfile = ({ route }) => {
   <PrimaryButton
     title="Message"
     onPress={() => {
+        setSelected('Message');
      Alert.alert("coming soon")
     }}
-    customsBg={selected === 'share' ? '#000' : '#D3D3D3'}
+    //  customsBg={selected === 'Message' ? '#000' : 'transparent'} // Black if selected, else transparent
+    // titleStyle={{
+    //   color: selected === 'Message' ? '#fff' : '#000', // White if selected, else black
+    // }}
+    //    buttonStyle={{
+    //   borderWidth: 1,
+    //   borderColor: '#000',
+    // }}
+       customsBg={selected === 'Message' ? theme.$primary : 'transparent'}
     titleStyle={{
-      color: selected === 'share' ? '#fff' : '#333',
+      color: selected === 'Message' ? theme.$onPrimary : theme.$lightText, // text color based on selection
     }}
+       buttonStyle={{
+      borderWidth: 1,
+     borderColor: theme.$lightText,
+   
+    }}
+    
   />
 </ButtonWithPushBack>
 {userType === 'business' && (
     <ButtonWithPushBack customContainerStyle={{ flex: 1 }}>
       <PrimaryButton
         title="Invite"
-        onPress={() => Alert.alert("coming soon")}
-        customsBg={'#D3D3D3'}
-        titleStyle={{ color: '#333' }}
+      onPress={() => {
+  setSelected('Invite');
+  Alert.alert('Coming soon');
+}}
+    //       customsBg={selected === 'Invite' ? '#000' : 'transparent'} // Black if selected, else transparent
+    // titleStyle={{
+    //   color: selected === 'Invite' ? '#fff' : '#000', // White if selected, else black
+    // }}
+       customsBg={selected === 'Invite' ? theme.$primary : 'transparent'}
+    titleStyle={{
+      color: selected === 'Invite' ? theme.$onPrimary : theme.$lightText, // text color based on selection
+    }}
+       buttonStyle={{
+      borderWidth: 1,
+      borderColor: theme.$lightText,
+   
+    }}
       />
     </ButtonWithPushBack>
   )}
+</View>
+<View style={{marginTop:15,flex:1}}>
+<CustomGrid images={images} />
 </View>
     </SafeAreaView>
   );
@@ -163,7 +234,6 @@ const style = StyleSheet.create({
     // width: wp('100%'),
     // height: hp('100%')
     flex:1,
-    backgroundColor:"#FFFFFF",
     paddingHorizontal:16
   },
 })

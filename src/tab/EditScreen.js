@@ -3,7 +3,6 @@ import {
     SafeAreaView,
     StyleSheet,
     View,
-    Text,
     TouchableOpacity,
     Platform,
     TextInput,
@@ -27,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AuthStorage from "../utils/authStorage";
 import axios from "axios";
 import ActivityIndicator from "../assets/activityIndicator";
+import Text from "../component/Text";
 
 const EditProfile = () => {
       const navigation = useNavigation();
@@ -359,10 +359,15 @@ const EditProfile = () => {
     //       console.error(error);
     //     }
     //   };
+
       
       
     return (
-        <SafeAreaView style={styles.container}>
+          <SafeAreaView
+                 style={[
+                   styles.container,
+                   {backgroundColor: theme.$background}, // ✅ dynamic background color
+                 ]}>
             <Header title="Edit Profile" showBack={true} />
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.avatarWrapper}>
@@ -390,7 +395,7 @@ const EditProfile = () => {
 
                 <View style={styles.inputRow}>
                     <View style={styles.inputGrouphalf}>
-                        <Text style={styles.label}>First Name</Text>
+                        <Text  h5 bold style={styles.label}>First Name</Text>
                         <TextInput
                             placeholder="Enter first name"
                             style={styles.inputBoxHalf}
@@ -399,7 +404,7 @@ const EditProfile = () => {
                         />
                     </View>
                     <View style={styles.inputGrouphalf}>
-                        <Text style={styles.label}>Last Name</Text>
+                        <Text h5 bold style={styles.label}>Last Name</Text>
                         <TextInput
                             placeholder="Enter last name"
                             style={styles.inputBoxHalf}
@@ -410,7 +415,7 @@ const EditProfile = () => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Phone</Text>
+                    <Text h5 bold style={styles.label}>Phone</Text>
                     <TextInput
                         placeholder="Enter phone number"
                         style={styles.inputBox}
@@ -418,11 +423,12 @@ const EditProfile = () => {
                         onChangeText={(text) => handleInputChange('phone', text)}
                         keyboardType="phone-pad"
                         editable={false}
+                        
                     />
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Email</Text>
+                    <Text h5 bold style={styles.label}>Email</Text>
                     <TextInput
                         placeholder="Enter email"
                         style={styles.inputBox}
@@ -435,7 +441,7 @@ const EditProfile = () => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Location</Text>
+                    <Text h5 bold style={styles.label}>Location</Text>
                     <TextInput
                         placeholder="Enter location"
                         style={styles.inputBox}
@@ -447,7 +453,7 @@ const EditProfile = () => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Description</Text>
+                    <Text h5 bold style={styles.label}>Description</Text>
                     <TextInput
                         placeholder="Tell something about you"
                         style={styles.inputBox}
@@ -460,13 +466,13 @@ const EditProfile = () => {
 
                 <View style={styles.buttonRow}>
                     <TouchableOpacity style={styles.cancelbtn} onPress={handleCancel}>
-                        <Text style={styles.btnText}>Cancel</Text>
+                        <Text h5 bold>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.savebtn} onPress={updateProfile} disabled={loading}>
+                    <TouchableOpacity   style={[styles.savebtn, { backgroundColor: theme.$lightText }]} onPress={updateProfile} disabled={loading}>
   {loading ? (
-    <ActivityIndicator size="small" color="#fff" />
+    <ActivityIndicator size="small" color={theme.$lightText} />
   ) : (
-    <Text style={styles.btnText}>Save</Text>
+    <Text h5 bold customColor={theme.$background}>Save</Text>
   )}
 </TouchableOpacity>
 
@@ -496,9 +502,9 @@ const styles = StyleSheet.create({
     container: {
         width: wp('100%'),
         height: hp('100%'),
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: wp('5%'),
-        paddingTop: '2%',
+      // padding: hp('2%'),
+      paddingHorizontal: wp('5%'),
+      
     },
     avatarWrapper: {
         justifyContent: 'center',
@@ -515,29 +521,31 @@ const styles = StyleSheet.create({
         padding: wp('1.5%'),
     },
     label: {
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 4,
-        color: '#333',
+        // fontSize: 14,
+        // fontWeight: '500',
+        // marginBottom: 4,
+        // color: '#333',
     },
     inputRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: hp('2%'),
         // backgroundColor:"pink"
+        // paddingHorizontal:16
     },
     inputGroup: {
         marginTop: hp('2%'),
+        paddingHorizontal:16
     },
     inputGrouphalf: {
         width: '48%',
+        paddingHorizontal:16
     },
     inputBox: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,
-        padding: 10,
-        fontSize: 14,
+        padding: 10,  
         backgroundColor: '#F9F9F9',
     },
     inputBoxHalf: {
@@ -545,14 +553,15 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 8,
         padding: 10,
-        fontSize: 14,
+      fontSize:16,
         backgroundColor: '#F9F9F9',
     },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: hp('15%'),
+        marginTop: hp('13%'),
         marginBottom: hp('5%'),
+        paddingHorizontal:16
     },
     cancelbtn: {
         width: '48%',
@@ -563,7 +572,7 @@ const styles = StyleSheet.create({
     },
     savebtn: {
         width: '48%',
-        backgroundColor: '#000',
+      
         paddingVertical: 12,
         borderRadius: 8,
         alignItems: 'center',

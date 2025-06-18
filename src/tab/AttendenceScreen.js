@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   Image,
+  SafeAreaView,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {
@@ -177,7 +178,6 @@ const AttendenceScreen = () => {
       Alert.alert('Error', 'Failed to load batch members');
     }
   };
-
   const markAttendance = async () => {
     try {
       if (!selectedBatch) {
@@ -262,8 +262,13 @@ const AttendenceScreen = () => {
   const flatListData = prepareFlatListData(attendanceLogs);
   
   return (
-    <View style={styles.container}>
-      {step === 0 && <Header showBack={true} title="Attendance" />}
+        <SafeAreaView
+               style={[
+                 styles.container,
+                 { backgroundColor: theme.$background }, // ✅ dynamic background color
+               ]}
+             >
+      {/* {step === 0 && <Header showBack={true} title="Attendance" />} */}
       {step === 0 && (
         <>
           <View style={{paddingHorizontal: wp('4%'), marginTop: hp('1%')}}>
@@ -341,7 +346,7 @@ const AttendenceScreen = () => {
                     minHeight: hp('6.5%'),
                     marginTop: hp('0.6.5%'),
                   }}>
-                  <Text h5>Mark Attendance</Text>
+                  <Text h5 bold customColor="black" >Mark Attendance</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -355,7 +360,7 @@ const AttendenceScreen = () => {
             <TouchableOpacity
               onPress={showDatePicker}
               style={styles.datePickerButton}>
-              <Text>
+              <Text h5 bold  customColor={"black"} >
                 {selectedDate ? selectedDate.toDateString() : 'Select Date'}
               </Text>
             </TouchableOpacity>
@@ -368,7 +373,7 @@ const AttendenceScreen = () => {
               maximumDate={today}
             />
           </View>
-          <FlatList
+          {/* <FlatList
             data={batchMembers}
             keyExtractor={item => item.id.toString()}
             renderItem={({item}) => (
@@ -379,7 +384,7 @@ const AttendenceScreen = () => {
                     styles.card,
                     {flexDirection: 'row', alignItems: 'center', padding: 10},
                   ]}>
-                  <Text h4 bold style={{flex: 1}}>
+                   <Text h5 bold  customColor={"black"} style={{flex:1}} >
                     {item.email}
                   </Text>
                   <Checkbox
@@ -395,19 +400,87 @@ const AttendenceScreen = () => {
                   <Image
                     source={require('../assets/icon/attendence.webp')}
                     style={{
-                      width: 250,
-                      height: 250,
+                      width: 200,
+                      height: 200,
                       resizeMode: 'contain',
                       marginBottom: 60,
                     }}
                   />
+                  <View style={{paddingHorizontal:16}}>
                   <Text h3 bold textAliments="center">
                     No members found .Please select members.
                   </Text>
+                  </View>
                 </View>
               ) : null
             }
+          /> */}
+          {batch.length === 0 ? (
+  <View style={{ alignItems: 'center', marginTop: 50 }}>
+    <Image
+      source={require('../assets/icon/attendence.webp')}
+      style={{
+        width: 200,
+        height: 200,
+        resizeMode: 'contain',
+        marginBottom: 60,
+      }}
+    />
+    <View style={{ paddingHorizontal: 16 }}>
+      <Text h3 bold textAliments="center">
+        No batches available. Please create a batch first.
+      </Text>
+    </View>
+  </View>
+) : (
+  <FlatList
+    data={batchMembers}
+    keyExtractor={item => item.id.toString()}
+    renderItem={({ item }) => (
+      <View style={{ paddingHorizontal: 16 }}>
+        <Card
+          third
+          style={[
+            styles.card,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: 10,
+            },
+          ]}
+        >
+          <Text h5 bold customColor="black" style={{ flex: 1 }}>
+            {item.email}
+          </Text>
+          <Checkbox
+            checked={selectedItems.includes(item.id)}
+            onPress={() => toggleSelection(item.id)}
           />
+        </Card>
+      </View>
+    )}
+    ListEmptyComponent={() =>
+      selectedBatch ? (
+        <View style={{ alignItems: 'center', marginTop: 50 }}>
+          <Image
+            source={require('../assets/icon/attendence.webp')}
+            style={{
+              width: 200,
+              height: 200,
+              resizeMode: 'contain',
+              marginBottom: 60,
+            }}
+          />
+          <View style={{ paddingHorizontal: 16 }}>
+            <Text h3 bold textAliments="center">
+              No members found. Please select members.
+            </Text>
+          </View>
+        </View>
+      ) : null
+    }
+  />
+)}
 
           <ButtonWithPushBack customContainerStyle={styles.buttonContainer}>
             <PrimaryButton
@@ -463,7 +536,7 @@ const AttendenceScreen = () => {
           }}>
           <Text h5 semiBold>{`${item.day}, ${item.date}`}</Text>
           <View style={{ left: 5 }}>
-            <Icon name="calendar" type="feather" size={15} color="#000" />
+            <Icon name="calendar" type="feather" size={15} color={theme.lightText} />
           </View>
         </View>
       );
@@ -478,7 +551,7 @@ const AttendenceScreen = () => {
               alignItems: 'center',
               padding: 10,
             }}>
-            <Text h4 bold style={{ flex: 1 }}>
+            <Text h4 bold customColor={"black"} style={{ flex: 1 }}>
               {item.user}
             </Text>
             <Checkbox
@@ -497,7 +570,7 @@ const AttendenceScreen = () => {
           </KeyboardAvoidingView>
         </Slide>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -507,13 +580,16 @@ const styles = StyleSheet.create({
   container: {
     width: wp('100%'),
     height: hp('100%'),
-    backgroundColor: '#ffffff',
-    padding: hp('2%'),
+    // backgroundColor: '#ffffff',
+    // padding: hp('2%'),
+    paddingHorizontal:16
   },
   buttonContainer: {
     position: 'absolute',
-    bottom: hp('10%'),
+    // bottom: hp('10%'),
     right: wp('7%'),
+    top:hp('65%'),
+  
   },
   buttonContainers: {
     marginVertical: 30,
@@ -541,7 +617,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontSize: 14,
+  
     marginTop: 5,
     textAlign: 'center',
   },

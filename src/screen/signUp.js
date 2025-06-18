@@ -82,8 +82,8 @@ const SignUp = () => {
     if (!password.trim()) {
       // newErrors.password = "Password is required.";
       isValid = false;
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters.';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters.';
       isValid = false;
     }
 
@@ -137,10 +137,12 @@ const SignUp = () => {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        {...(Platform.OS == 'android' && TOP_SPACE_ANDROID)},
-      ]}>
+     style={[
+       styles.container,
+       { backgroundColor: theme.$background }, // ✅ dynamic background color
+       Platform.OS === 'android' && TOP_SPACE_ANDROID,
+     ]}
+   >
       {step === 0 && (
         <View
           style={{
@@ -164,7 +166,7 @@ const SignUp = () => {
               size: 60,
             }}
           />
-          <Text h5 textAliments="center" style={{color: theme.$surgace}}>
+          <Text h5 textAliments="center" style={{color: theme.$surface}}>
             Please select your profile type
           </Text>
           <View style={styles.profileSelector}>
@@ -213,7 +215,7 @@ const SignUp = () => {
                 h2
                 semiBold
                 textAliments="center"
-                style={{color: theme.$surface}}>
+                style={{color: theme.$lightText}}>
                 Create account
               </Text>
             </View>
@@ -286,8 +288,8 @@ const SignUp = () => {
                   checked={isChecked}
                   onPress={() => setIsChecked(!isChecked)}
                 />
-                <Text>
-                  Minimum 8 characters required
+                <Text h5 >
+                  Minimum 6 characters required
                 </Text>
               </View>
             </View>
@@ -351,6 +353,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     // marginTop: 10,
+ 
+
   },
   checkboxText: {
     color: 'grey',
