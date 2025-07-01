@@ -42,6 +42,7 @@ import {
   setPersonalProfile,
 } from '../slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 
 export default function Login() {
   const {theme} = useTheme();
@@ -106,6 +107,17 @@ export default function Login() {
         );
         dispatch(setData(response?.user));
         // ✅ Fetch personal & business profiles after login
+
+        // login firebase analytic
+        try {
+          await analytics().logLogin({
+          method: "email_password",
+          timestamp: Date.now(),
+        })
+        console.log("Login event logged successfully");
+        } catch (error) {
+          console.log("Analytics failed, but login succeeded:", analyticsError);
+        }
 
         showMessage({
           message: 'Login successful!',

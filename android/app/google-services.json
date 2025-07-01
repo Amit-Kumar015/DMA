@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "350737523981",
-    "project_id": "dma-notification-bd580",
-    "storage_bucket": "dma-notification-bd580.firebasestorage.app"
+    "project_number": "1086851522676",
+    "project_id": "dma-react-native-analytics",
+    "storage_bucket": "dma-react-native-analytics.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:350737523981:android:aa4240478bd13d0109fc44",
+        "mobilesdk_app_id": "1:1086851522676:android:86926579de826a3e447121",
         "android_client_info": {
           "package_name": "com.dma"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDZhoxRL_Zk74Jp7zI4EMjO1WVylm-b6N8"
+          "current_key": "AIzaSyCgvTSAhyM4bWwy0p1aQnhEggkoDMENJX8"
         }
       ],
       "services": {

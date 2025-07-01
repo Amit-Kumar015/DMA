@@ -19,7 +19,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
-import {useNavigation, useIsFocused} from '@react-navigation/native';
+import {useNavigation, useIsFocused, useFocusEffect} from '@react-navigation/native';
 import Video from 'react-native-video';
 import useTheme from '../hooks/useTheme';
 import AuthStorage from '../utils/authStorage';
@@ -746,6 +746,33 @@ comments_count
       </Animated.View>
     );
   };
+
+  // screen time logger
+  const startTimeRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const startTime = Date.now();
+      startTimeRef.current = startTime;
+
+      return () => {
+        const endTime = Date.now();
+        const timeSpentInSeconds = Math.floor((endTime - startTimeRef.current) / 1000);
+
+        (async () => {
+          try {
+            await analytics().logEvent("screen_time", {
+              screen_name: 'reel_screen',
+              duration_seconds: timeSpentInSeconds,
+            });
+            console.log('Time spent on reelScreen:', timeSpentInSeconds);
+          } catch (error) {
+            console.log("Analytics failed for reel screen:", error);
+          }
+        })();
+      };
+    }, [])
+  );
 
   return (
     <SafeAreaView

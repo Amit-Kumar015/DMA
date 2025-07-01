@@ -17,6 +17,7 @@ import ActivityIndicator from '../assets/activityIndicator';
 import {SCREEN_HEIGHT, TOP_SPACE_ANDROID} from '../utils/dimensions';
 import ButtonWithPushBack from '../component/Button';
 import AuthStorage from '../utils/authStorage';
+import analytics from '@react-native-firebase/analytics';
 
 const CORRECT_OTP = '123456';
 
@@ -76,9 +77,27 @@ const handleVerify = async () => {
 
       // ✅ Navigate only if tokens exist
       if (response.data.access && response.data.refresh) {
+
+        // google analytics signup event
         if (user_type.toLowerCase() === 'personal') {
+          try {
+            await analytics().logEvent("personal_signup", {
+              method: "email_password",
+              timestamp: Date.now(),
+            })
+          } catch (error) {
+            console.log("Analytics failed, but signup succeeded:", analyticsError);
+          }
           navigation.navigate('createProfile', { userId });
         } else {
+          try {
+            await analytics().logEvent("business_signup", {
+              method: "email_password",
+              timestamp: Date.now(),
+            })
+          } catch (error) {
+            console.log("Analytics failed, but login succeeded:", analyticsError);
+          }
           navigation.navigate('BussinessProfile', { userId });
         }
       // if(response){

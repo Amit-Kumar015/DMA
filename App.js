@@ -45,6 +45,7 @@ import messaging from '@react-native-firebase/messaging';
 import notifee,{AndroidColor, AndroidImportance} from '@notifee/react-native';
 import firebase,{ createNotificationChannel, requestUserPermission } from './src/utils/FireBaseService';
 import FlashMessage from 'react-native-flash-message';
+import analytics from '@react-native-firebase/analytics';
 export const navigationRef = React.createRef();
 
 const App = () => {
@@ -113,6 +114,20 @@ const initialLoginState = {
 
 //     return unsubscribe;
 //  }, []);
+  useEffect(() => {
+    const openAppEvent = async () => {
+      try {
+        await analytics().logAppOpen();
+        console.log("App open event logged successfully")
+      } catch (error) {
+        console.log("error while logging event for app open"); 
+      }
+    }
+    openAppEvent()
+  }, []);
+
+
+
 useEffect(() => {
   const init = async () => {
     await requestUserPermission();
