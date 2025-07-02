@@ -1001,12 +1001,6 @@ const styles = StyleSheet.create({
   keyboardAvoiding: {
     flex: 1,
   },
-//   fixedBottomButton: {
-//   padding: 16,
-//   borderTopWidth: 1,
-//   borderColor: '#ddd',
-//   backgroundColor: '#fff',
-// },
 scrollContent: {
   flexGrow: 1,
 //   alignItems: 'center',
@@ -1040,14 +1034,6 @@ uploadCard: {
     bottom: 10,
     fontSize: hp('1.5%'),
     color: '#888',
-  },
-  buttonContainers: {
-    marginVertical: 30,
-    // marginTop:200,
-    width: '50%',
-    alignSelf: 'center',
-   
-
   },
  
 //   uploadCard: {

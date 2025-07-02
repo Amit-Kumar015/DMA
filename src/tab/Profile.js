@@ -587,24 +587,6 @@ const style = StyleSheet.create({
     
   
   },
-  editProfileButton: {
-    marginTop: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E847C5',
-    borderRadius: 20,
-  },
-  addImageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: hp('10%'),
-  },
-  avatarContainer: {
-    alignItems: 'center',
-    padding: 20,
-  },
   card: {
     width: itemSize,
     height: itemSize*2,

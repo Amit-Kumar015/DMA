@@ -591,35 +591,12 @@ const styles = StyleSheet.create({
     top:hp('65%'),
   
   },
-  buttonContainers: {
-    marginVertical: 30,
-    width: '50%',
-    alignSelf: 'center',
-    // justifyContent:"flex-end",
-    // flex:1
-  },
-  inputContainer: {
-    marginTop: hp('2%'),
-  },
-  timePickerButton: {
-    padding: 15,
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 5,
-    backgroundColor: '#f2f3f4',
-  },
   scrollContainer: {
     flexGrow: 1,
     paddingBottom: hp('1%'),
   },
   label: {
     marginBottom: 10,
-  },
-  errorText: {
-    color: 'red',
-  
-    marginTop: 5,
-    textAlign: 'center',
   },
   datePickerButton: {
     backgroundColor: '#f2f3f4', // Background color

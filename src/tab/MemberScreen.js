@@ -870,30 +870,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     left: 20,
   },
-  inputContainer: {
-    marginTop: hp('2%'),
-  },
-  timePickerButton: {
-    padding: 15,
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 5,
-    backgroundColor: '#f2f3f4',
-  },
   dropdowm: {
     //   flexGrow: 1,
     //   paddingBottom: hp('1%'),
     paddingHorizontal: 16,
     top: 10,
-  },
-  label: {
-    marginBottom: 10,
-  },
-  errorText: {
-    color: 'red',
-  
-    marginTop: 5,
-    textAlign: 'center',
   },
   cancelButton: {
     paddingVertical: 10,
@@ -908,22 +889,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: '70%',
     marginLeft: 10,
-  },
-  cameraIcon: {
-    position: 'absolute',
-    bottom: 1,
-    left: '59%',
-    transform: [{translateX: -wp('3%')}],
-    borderRadius: wp('5%'),
-    padding: wp('1.5%'),
-  },
-  ColRow: {
-    flexDirection: 'row',
-    // alignItems: 'center',
-    justifyContent: 'space-between',
-    // marginTop: hp('3%'),
-    // alignSelf:"center",
-    // gap:20
   },
   // avatarWrapper: {
   //   justifyContent: 'center',

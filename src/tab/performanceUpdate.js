@@ -68,8 +68,4 @@ const styles = StyleSheet.create({
   buttonRow: {
     gap: 10,
   },
-
-  secondButton: {
-    marginLeft: 12,
-  },
 });

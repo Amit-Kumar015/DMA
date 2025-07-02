@@ -479,13 +479,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
   },
-  pdfPage: {
-    height: 100,
-    backgroundColor: '#f2f3f4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 12,
-  },
   cardFooter: {
     flexDirection: 'row',
     backgroundColor: '#000',

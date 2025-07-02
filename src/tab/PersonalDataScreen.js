@@ -2030,18 +2030,6 @@ const styles = StyleSheet.create({
    justifyContent:"space-between",
     marginBottom: 8,
   },
-  nameContainer: {
-    marginLeft: 10,
-  },
-  nameText: {
-    // fontSize: 16,
-    // fontWeight: 'bold',
-  },
-  eventName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 8,
-  },
   card: {
     marginBottom: 16,
     padding: 12,
@@ -2063,20 +2051,6 @@ openCalendarButton: {
   },
   buttonText: {
   
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    width: '100%',
-    maxWidth: 360,
   },
    modalTitle: {
     fontSize: 20,

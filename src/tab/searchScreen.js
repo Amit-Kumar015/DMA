@@ -217,30 +217,10 @@ const styles = StyleSheet.create({
     flex: 1,
       //  padding: hp('2%'),
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: wp('5%'),
-    marginTop: hp('1%'),
-  },
   list: {
     marginTop: hp('2%'),
     paddingHorizontal: wp('4%'),
     // backgroundColor: "#f9f9f9", // light background if you want
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: hp('1.5%'),
-  },
-  profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  employeeName: {
-    flex: 1,
   },
   emptyContainer: {
     flex: 1,

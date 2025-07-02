@@ -718,19 +718,6 @@ const styles = StyleSheet.create({
     // marginTop: 20,
     // marginBottom: 10,
   },
-  dayButton: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#4F4F4F',
-    marginHorizontal: 5,
-    backgroundColor: '#f2f3f4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 50,
-    height: 50,
-  },
   selectedDay: {
     backgroundColor: 'black',
   },
@@ -738,36 +725,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: 'black',
-  },
-  selectedDayText: {
-    color: 'white',
-  },
-  disabledInput: {
-    backgroundColor: '#f2f3f4',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    borderColor: '#000000',
-    borderWidth: 1,
-    marginTop: 5,
-  },
-  durationContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 5,
-  },
-  durationButton: {
-    backgroundColor: '#f2f3f4',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    // borderRadius: 5,
-    // marginRight: 8,
-    marginBottom: 5,
-    borderWidth: 1,
-    borderColor: '#000000',
-  },
-  selectedDuration: {
-    backgroundColor: 'black', // Selected होने पर Black Color
   },
   datePickerButton: {
     backgroundColor: '#f2f3f4',

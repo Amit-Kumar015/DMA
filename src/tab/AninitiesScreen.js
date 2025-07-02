@@ -395,19 +395,6 @@ const styles = StyleSheet.create({
     bottom: hp('10%'),
     right: wp('7%'),
   },
-  flexContainer: {
-    flex: 1,
-  },
- scrollContent: {
-  paddingHorizontal: 16,
-  paddingTop: 20,
-  // Remove flexGrow or limit its effect
-  // flexGrow: 1,
-},
-
-label: {
-  marginTop: normalizeSpacing(20),
-},
   bottomButton: {
     paddingHorizontal: 16,
   

@@ -966,20 +966,6 @@ const styles = StyleSheet.create({
     fontSize: hp('2%'),
     width: '100%',
   },
-  searchWrapper: {
-    // paddingHorizontal: wp("5%"),
-    // paddingTop: hp("5%"),
-},
-searchContainer: {
-    // backgroundColor: "transparent",
-    // padding: 0,
-    // elevation: 0,
-    // shadowOpacity: 0,
-    // shadowColor: 'transparent',  // 👈 Add this
-    // shadowOffset: { width: 0, height: 0 }, // 👈 Add this
-    // shadowRadius: 0, // 👈 Add this
-    // borderWidth: 0,
-},
 
 inputContainer: {
     // backgroundColor: "transparent",

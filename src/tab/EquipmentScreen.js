@@ -878,12 +878,6 @@ const styles = StyleSheet.create({
     borderColor: 'black',
       // Border color
   },
-
-
-  cardContent: {
-    // flexDirection: 'row',
-    // alignItems: 'center',
-  },
   viewButton: {
     backgroundColor: '#000000',
     paddingHorizontal: 20,

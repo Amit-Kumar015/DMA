@@ -434,14 +434,6 @@ const styles = StyleSheet.create({
     gap: 10,
     width:"100%"
   },
-
- buttonCont: {
-    flexDirection: 'row',
-  justifyContent: 'space-between', // ensures equal spacing
-
-  paddingHorizontal: 16,
-
-  },
   fixedButtonContainer: {
   paddingHorizontal: 16,
   // paddingBottom: 20,
@@ -451,10 +443,4 @@ const styles = StyleSheet.create({
   left:10,
   marginVertical:20
 },
-  updateButton: {
-    width: '80%',
-  },
-  deleteButton: {
-    width: '80%',
-  },
 });

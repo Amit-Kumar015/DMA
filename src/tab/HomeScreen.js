@@ -1029,14 +1029,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     backgroundColor: '#fff',
   },
-  itemText: {
-    fontSize: 16,
-  },
- 
-  sheetText: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
   contentContainer: {
     flex: 1,
     padding: 36,
@@ -1098,11 +1090,6 @@ iconCountText: {
    contentContainer: {
   flex: 1,
 justifyContent: 'flex-end'
-  },
-
-  iconBtn: {
-    marginTop: 60,
-    marginLeft: 20,
   },
 
   title: {
