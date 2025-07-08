@@ -81,20 +81,42 @@ const handleVerify = async () => {
         // google analytics signup event
         if (user_type.toLowerCase() === 'personal') {
           try {
-            await analytics().logEvent("personal_signup", {
+            console.log("response of api call: ", response);
+            
+            global.loginTime = Date.now();
+            await analytics().setUserId(userId);
+
+            await analytics().logEvent("signup", {
               method: "email_password",
-              timestamp: Date.now(),
+              user_id: userId,
+              username: username,
+              signup_type: user_type
             })
+            await analytics().setUserProperties({
+            username: username,
+            email: email,
+            user_type: user_type,
+          });
           } catch (error) {
             console.log("Analytics failed, but signup succeeded:", analyticsError);
           }
           navigation.navigate('createProfile', { userId });
         } else {
           try {
-            await analytics().logEvent("business_signup", {
+            global.loginTime = Date.now();
+            await analytics().setUserId(userId);
+            
+            await analytics().logEvent("signup", {
               method: "email_password",
-              timestamp: Date.now(),
+              user_id: userId,
+              username: username,
+              signup_type: user_type
             })
+            await analytics().setUserProperties({
+            username: username,
+            email: email,
+            user_type: user_type,
+          });
           } catch (error) {
             console.log("Analytics failed, but login succeeded:", analyticsError);
           }

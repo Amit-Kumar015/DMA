@@ -1,5 +1,5 @@
 import { StyleSheet,  View, Switch, Image, Alert, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import AuthStorage from '../utils/authStorage'
 import {
@@ -17,6 +17,7 @@ import { showMessage } from '../utils/messages/message';
 import { setProfile } from '../slices/profileSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Text from '../component/Text';
+import analytics from '@react-native-firebase/analytics';
 
 
 
@@ -71,6 +72,27 @@ const MenuOptionScreen = () => {
       {
         text: 'Log Out',
         onPress: async () => {
+          try {
+            const userId = await AsyncStorage.getItem("userId")
+            console.log(userId, "logout user id");
+
+            const logoutTime = Date.now();
+            const sessionDuration = Math.floor((logoutTime - global.loginTime) / 1000); // in seconds
+
+            // 🔥 Log a custom event to track session duration
+            await analytics().logEvent('user_session_duration', {
+              user_id: userId,
+              duration_seconds: sessionDuration,
+              logout_time: logoutTime,
+            });
+
+            // 🔓 Unset user ID for future events
+            await analytics().setUserId(null);
+            console.log('✅ Logout tracked. Session duration:', sessionDuration, 'sec');
+          } catch (err) {
+            console.log('❌ Logout tracking failed:', err);
+          }
+
           try {
             await AuthStorage.removeTokens();  
             await AsyncStorage.removeItem('userType');

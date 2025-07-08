@@ -106,17 +106,46 @@ export default function Login() {
           }),
         );
         dispatch(setData(response?.user));
+        console.log("in the login ");
+        
         // ✅ Fetch personal & business profiles after login
 
-        // login firebase analytic
+        // Firebase Analytics Tracking
         try {
-          await analytics().logLogin({
-          method: "email_password",
-          timestamp: Date.now(),
-        })
-        console.log("Login event logged successfully");
-        } catch (error) {
-          console.log("Analytics failed, but login succeeded:", analyticsError);
+          // const { user } = response;
+          // const userId = user.id;
+          // console.log(userId, "userid ");
+          
+          
+          global.loginTime = Date.now();
+          
+          await analytics().setUserId(response.user.id);
+          await analytics().setUserProperties({
+            username: response.user.username,
+            email: response.user.email,
+            user_type: response.user.user_type,
+          });
+
+          await analytics().logEvent('login', {
+            method: 'password',
+            user_id: response.user.id,
+            username: response.user.username,
+          });
+
+          // await analytics().setUserId(userId);
+
+          // await analytics().logLogin({
+          //   method: 'email_password',
+          // });
+
+          // await analytics().logEvent('login_time', {
+          //   user_id: userId,
+          //   login_time: global.loginTime,
+          // });
+
+          console.log('✅ Login tracked');
+        } catch (err) {
+          console.log('❌ Login tracking failed:', err);
         }
 
         showMessage({

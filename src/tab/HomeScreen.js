@@ -37,6 +37,7 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import analytics from '@react-native-firebase/analytics';
 
 
 const HEADER_HEIGHT = 65;
@@ -762,12 +763,12 @@ comments_count
         (async () => {
           try {
             await analytics().logEvent("screen_time", {
-              screen_name: 'reel_screen',
+              screen_name: 'Home_Screen',
               duration_seconds: timeSpentInSeconds,
             });
-            console.log('Time spent on reelScreen:', timeSpentInSeconds);
+            console.log('Time spent on Home Screen:', timeSpentInSeconds);
           } catch (error) {
-            console.log("Analytics failed for reel screen:", error);
+            console.log("Analytics failed for Home Screen:", error);
           }
         })();
       };
