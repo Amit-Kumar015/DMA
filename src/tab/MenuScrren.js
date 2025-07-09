@@ -1,5 +1,5 @@
 import { StyleSheet,  View, Switch, Image, Alert, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { useNavigation } from '@react-navigation/native'
 import AuthStorage from '../utils/authStorage'
 import {
@@ -17,6 +17,8 @@ import { showMessage } from '../utils/messages/message';
 import { setProfile } from '../slices/profileSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Text from '../component/Text';
+import notifee, { AuthorizationStatus } from '@notifee/react-native';
+import { Linking, Platform } from 'react-native';
 
 
 
@@ -24,6 +26,45 @@ const MenuOptionScreen = () => {
   const { theme, toggleTheme } = useTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
+
+  const checkNotificationPermission = async () => {
+  const settings = await notifee.getNotificationSettings();
+
+  return (
+    settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
+    settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
+  );
+};
+    const openAppNotificationSettings = async () => {
+  if (Platform.OS === 'android') {
+    await notifee.openNotificationSettings(); // opens app notification settings
+  } else {
+    Linking.openURL('app-settings:');
+  }
+};
+
+const [isEnabled, setIsEnabled] = useState(false);
+useEffect(() => {
+    const checkPermission = async () => {
+      const granted = await checkNotificationPermission();
+      setIsEnabled(granted);
+    };
+
+    checkPermission();
+  }, []);
+
+    const handleToggle = () => {
+    Alert.alert(
+      'Manage Notifications',
+      isEnabled
+        ? 'To disable notifications, go to system settings.'
+        : 'To enable notifications, go to system settings.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Open Settings', onPress: openAppNotificationSettings },
+      ]
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.$background }]}>
@@ -60,6 +101,50 @@ const MenuOptionScreen = () => {
           thumbColor={theme.mode === 'dark' ? '#f5dd4b' : '#f4f3f4'}
         />
       </View>
+       <View style={[styles.ColRow, { 
+        backgroundColor: theme.$surface,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image 
+            source={require('../assets/icon/notification.png')} 
+            style={{ width: 24, height: 24, marginRight: 10 }}
+          />
+          <Text h5 bold customColor="black">Notifications</Text>
+        </View>
+        <Switch
+          onValueChange={handleToggle}
+          value={isEnabled}
+          trackColor={{ false: '#767577', true: '#81b0ff' }}
+          thumbColor={theme.mode === 'dark' ? '#f5dd4b' : '#f4f3f4'}
+        />
+      </View>
+      <TouchableOpacity
+        style={[styles.ColRow, { backgroundColor: theme.$surface }]}
+        onPress={() => {}}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image 
+            source={require('../assets/icon/help.png')} 
+            style={{ width: 24, height: 24, marginRight: 10 }}
+          />
+          <Text bold customColor="black" >Help</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.ColRow, { backgroundColor: theme.$surface }]}
+        onPress={() => {}}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image 
+            source={require('../assets/icon/about.png')} 
+            style={{ width: 24, height: 24, marginRight: 10 }}
+          />
+          <Text bold customColor="black" >About</Text>
+        </View>
+      </TouchableOpacity>
       <TouchableOpacity
   style={[styles.ColRow, { backgroundColor: theme.$surface }]}
   onPress={() =>
