@@ -25,7 +25,7 @@ import AlertPopUp from '../component/AlertPopUp';
 
 const MenuOptionScreen = () => {
   const { theme, toggleTheme } = useTheme();
-  const [showAlert, setShowAlert] = useState(false);
+  const [notificationAlertVisible, setNotificationAlertVisible] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -55,9 +55,6 @@ useEffect(() => {
     checkPermission();
   }, []);
 
-    const handleToggle = () => {
-      setShowAlert(true);
-  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.$background }]}>
@@ -108,13 +105,13 @@ useEffect(() => {
           <Text h5 bold customColor="black">Notifications</Text>
         </View>
         <Switch
-          onValueChange={handleToggle}
+          onValueChange={() => setNotificationAlertVisible(true)}
           value={isEnabled}
           trackColor={{ false: '#767577', true: '#81b0ff' }}
           thumbColor={theme.mode === 'dark' ? '#f5dd4b' : '#f4f3f4'}
         />
       <AlertPopUp
-        visible={showAlert}
+        visible={notificationAlertVisible}
         title="Manage Notifications"
         message={
           isEnabled
@@ -122,9 +119,9 @@ useEffect(() => {
             : 'To enable notifications, go to system settings.'
         }
         okText="Open Settings"
-        onCancel={() => setShowAlert(false)}
+        onCancel={() => setNotificationAlertVisible(false)}
         onPress={() => {
-          setShowAlert(false);
+          setNotificationAlertVisible(false);
           openAppNotificationSettings();
         }}
       />
