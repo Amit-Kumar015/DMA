@@ -1,5 +1,5 @@
-import { StyleSheet,  View, Switch, Image, Alert, TouchableOpacity } from 'react-native'
-import React, {useState, useEffect} from 'react'
+import { StyleSheet,  View, Switch, Image, Alert, TouchableOpacity, AppState } from 'react-native'
+import React, {useState, useEffect, useRef} from 'react'
 import { useNavigation } from '@react-navigation/native'
 import AuthStorage from '../utils/authStorage'
 import {
@@ -19,11 +19,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Text from '../component/Text';
 import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import { Linking, Platform } from 'react-native';
+import AlertPopUp from '../component/AlertPopUp';
 
 
 
 const MenuOptionScreen = () => {
   const { theme, toggleTheme } = useTheme();
+  const [showAlert, setShowAlert] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -54,16 +56,7 @@ useEffect(() => {
   }, []);
 
     const handleToggle = () => {
-    Alert.alert(
-      'Manage Notifications',
-      isEnabled
-        ? 'To disable notifications, go to system settings.'
-        : 'To enable notifications, go to system settings.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: openAppNotificationSettings },
-      ]
-    );
+      setShowAlert(true);
   };
 
   return (
@@ -120,6 +113,21 @@ useEffect(() => {
           trackColor={{ false: '#767577', true: '#81b0ff' }}
           thumbColor={theme.mode === 'dark' ? '#f5dd4b' : '#f4f3f4'}
         />
+      <AlertPopUp
+        visible={showAlert}
+        title="Manage Notifications"
+        message={
+          isEnabled
+            ? 'To disable notifications, go to system settings.'
+            : 'To enable notifications, go to system settings.'
+        }
+        okText="Open Settings"
+        onCancel={() => setShowAlert(false)}
+        onPress={() => {
+          setShowAlert(false);
+          openAppNotificationSettings();
+        }}
+      />
       </View>
       <TouchableOpacity
         style={[styles.ColRow, { backgroundColor: theme.$surface }]}
