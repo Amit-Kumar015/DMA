@@ -747,6 +747,9 @@ comments_count
       </Animated.View>
     );
   };
+  useEffect(() => {
+    analytics().setAnalyticsCollectionEnabled(true);
+  }, []);
 
   // screen time logger
   const startTimeRef = useRef(null);
@@ -759,14 +762,21 @@ comments_count
       return () => {
         const endTime = Date.now();
         const timeSpentInSeconds = Math.floor((endTime - startTimeRef.current) / 1000);
+        console.log('⏱️ Raw time spent:', timeSpentInSeconds, typeof timeSpentInSeconds);
 
         (async () => {
           try {
-            await analytics().logEvent("screen_time", {
-              screen_name: 'Home_Screen',
-              duration_seconds: timeSpentInSeconds,
-            });
-            console.log('Time spent on Home Screen:', timeSpentInSeconds);
+            if (!isNaN(timeSpentInSeconds) && typeof timeSpentInSeconds === 'number' && timeSpentInSeconds > 0) {
+              analytics().logEvent("screen_time", {
+                screen_name: 'Home_Screen',
+                duration_seconds: timeSpentInSeconds,
+              });
+              console.log('✅ Logged duration_seconds:', timeSpentInSeconds);
+            }
+            else{
+              console.warn('❌ Invalid duration_seconds:', timeSpentInSeconds);
+            }
+
           } catch (error) {
             console.log("Analytics failed for Home Screen:", error);
           }
