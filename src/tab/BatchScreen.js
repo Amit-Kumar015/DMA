@@ -31,6 +31,8 @@ import SkeletonCard from '../component/skeleternLoader';
 import { showMessage } from '../utils/messages/message';
 import { SafeAreaView } from 'react-native';
 import TextInputEml from '../component/textInput';
+import analytics from '@react-native-firebase/analytics';
+
 
 const BatchScreen = () => {
   const [step, setStep] = useState(0);
@@ -64,6 +66,24 @@ const [selectedBatchId,setSelectedBatchId]=useState()
     setErrorMessage('');
     setEndTimePickerVisibility(true);
   };
+
+  
+useEffect(() => {
+  analytics().logEvent("screen_time", {
+    screen_name: 'Test',
+    duration_seconds: 10, // Known-good int
+  });
+  console.log("Test event sent: duration_seconds = 10 in number");
+}, []);
+
+useEffect(() => {
+  analytics().logEvent("screen_time", {
+    screen_name: 'Test',
+    duration_seconds: "100", // Known-good string
+  });
+  console.log("Test event sent: duration_seconds = 100 in string ");
+}, []);
+
 
   const hideEndTimePicker = () => setEndTimePickerVisibility(false);
 
